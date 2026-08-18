@@ -254,6 +254,22 @@ svg.ic.sm{width:13px;height:13px}
 .addrow input:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--accs)}
 .tmwrap{display:flex;gap:4px;align-items:center}
 .tmwrap input{padding:5px 4px;text-align:center;font-family:var(--mono);font-size:11px}
+/* 可选项 */
+.optwrap{overflow-x:auto;border:1px solid var(--rule);border-radius:9px}
+.opt{width:100%;border-collapse:collapse;font-size:12.5px}
+.opt th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);font-weight:500;padding:7px 10px;
+  border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--s2)}
+.opt td{padding:8px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+.opt tr:last-child td{border-bottom:0}
+.opt tr.chosen td{background:var(--accs);font-weight:500}
+.opt tr.chosen td:first-child{box-shadow:inset 2px 0 0 var(--acc)}
+.opt .mark{width:22px;color:var(--acc);text-align:center}
+.ctx{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;padding-top:11px;
+  border-top:1px dotted var(--rule)}
+.ctxi{display:inline-flex;gap:7px;align-items:baseline;font-size:12px;
+  border:1px solid var(--rule);border-radius:7px;padding:5px 10px;background:var(--s2)}
+.ctxi .t{font-family:var(--mono);font-size:10.5px;color:var(--acc)}
 .disp{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 .dbtn{font-size:12px;padding:5px 12px;border-radius:7px;border:1px solid var(--rule2);
   background:var(--surface);transition:all .14s}
@@ -968,6 +984,87 @@ function sourceEditor(src){
   return slot(src.label||src.tool,"layers",h("span",{class:"tag a"},["我的数据"]),body);
 }
 
+
+/* ---------- 决策依据：可选项与被选中项 ---------- */
+function norm(v){return String(v).trim().toLowerCase().replace(/[\s\-_/]/g,"");}
+function pickChosen(items,facts){
+  var vals=[];for(var k in (facts||{})){var v=facts[k];
+    if(v!=null&&typeof v!=="object")vals.push(norm(v));}
+  if(!vals.length||!items.length)return -1;
+  // 只用能区分选项的字段：所有选项都相同的值无法指认谁被选中
+  var keys={},disc={};
+  items.forEach(function(it){for(var k in it){var v=it[k];
+    if(v==null||typeof v==="object")return;
+    (keys[k]=keys[k]||{})[norm(v)]=1;}});
+  for(var k in keys)disc[k]=Object.keys(keys[k]).length>1;
+  var best=0,bi=-1;
+  items.forEach(function(it,i){
+    var sc=0;
+    for(var k in it){
+      if(!disc[k])continue;
+      var v=it[k];if(v==null||typeof v==="object")continue;
+      var nv=norm(v);if(nv.length<2)continue;
+      for(var j=0;j<vals.length;j++){
+        if(vals[j]===nv){sc+=2;break;}
+        if(nv.length>=4&&vals[j].indexOf(nv)>=0){sc+=1;break;}
+      }
+    }
+    if(sc>best){best=sc;bi=i;}});
+  return best>0?bi:-1;
+}
+function optionCols(items){
+  var keys=[];items.forEach(function(it){Object.keys(it||{}).forEach(function(k){
+    if(keys.indexOf(k)<0)keys.push(k);});});
+  // 优先展示可比较的字段，其余最多补到 5 列
+  var pri=[],rest=[];
+  keys.forEach(function(k){
+    (/id|no|number|name|price|cost|amount|arriv|depart|time|date|stop|class|airline|merchant|categ/i
+      .test(k)?pri:rest).push(k);});
+  return pri.concat(rest).slice(0,6);
+}
+function optionsSlot(t){
+  if(!t.snap||!t.workflow)return null;
+  var srcByTool={};(S.sources||[]).forEach(function(x){srcByTool[x.tool]=x;});
+  var listTool=null,items=null;
+  for(var k in t.snap.tools){
+    var v=t.snap.tools[k];
+    if(Array.isArray(v)&&v.length&&typeof v[0]==="object"
+       &&(srcByTool[k]||{}).kind==="query"){listTool=k;items=v;break;}
+  }
+  if(!items)return null;
+  var ci=pickChosen(items,t.workflow.facts);
+  var cols=optionCols(items);
+  var tb=h("tbody");
+  items.forEach(function(it,i){
+    var tr=h("tr",{class:i===ci?"chosen":""});
+    tr.appendChild(h("td",{class:"mark"},[i===ci?"✓":""]));
+    cols.forEach(function(c){
+      var v=it[c];
+      tr.appendChild(h("td",{},[v==null?"":String(v).replace("T"," ")]));});
+    tb.appendChild(tr);});
+  var tbl=h("div",{class:"optwrap"},[h("table",{class:"opt"},[
+    h("thead",{},[h("tr",{},[h("th",{class:"mark"},[""])].concat(
+      cols.map(function(c){return h("th",{},[c]);})))]),tb])]);
+
+  var body=h("div",{},[tbl]);
+  // 同时把用户自己的数据摆出来，便于对照判断
+  var ctx=h("div",{class:"ctx"});
+  Object.keys(t.snap.tools).forEach(function(k){
+    if((srcByTool[k]||{}).kind!=="data")return;
+    var rows=t.snap.tools[k];
+    if(!Array.isArray(rows))return;
+    var f=fieldMap(rows);
+    rows.slice(0,4).forEach(function(r){
+      ctx.appendChild(h("span",{class:"ctxi"},[
+        h("span",{class:"t"},[f.start?String(r[f.start]||"").replace("T"," "):""]),
+        h("span",{},[f.title?String(r[f.title]||""):JSON.stringify(r).slice(0,26)])]));});
+  });
+  if(ctx.childNodes.length)body.appendChild(ctx);
+
+  return slot("决策依据","layers",
+    h("span",{class:"tag"},[items.length+" 个可选项"+(ci<0?" · 未能定位所选项":"")]),body);
+}
+
 /* ---------- 槽位 ---------- */
 function slot(title,iconName,right,body,cls){
   return h("div",{class:"slot fade"+(cls?" "+cls:"")},[
@@ -1069,6 +1166,8 @@ function workView(){
     t.workflow?wfBody(t.workflow,{highlight:t.hl,
       fork:(t.summary&&!t.summary.stable)?t.summary.fork:null,cut:t.cut})
       :h("div",{class:"mn"},[h("span",{class:"spin"})])));
+
+  var op=optionsSlot(t);if(op)w.appendChild(op);
 
   // 发现：只在有话可说时出现
   var finds=[];
