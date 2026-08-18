@@ -222,6 +222,34 @@ svg.ic.sm{width:13px;height:13px}
 .rowdel{width:26px;text-align:center;color:var(--ink3)}
 .rowdel:hover{color:var(--bad)}
 .empt{text-align:center;padding:26px 10px;color:var(--ink3)}
+.disp{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.dbtn{font-size:12px;padding:5px 12px;border-radius:7px;border:1px solid var(--rule2);
+  background:var(--surface);transition:all .14s}
+.dbtn:hover{border-color:var(--acc)}
+.dbtn.chg{border-color:var(--okl);color:var(--ok);background:var(--oks)}
+.dbtn.pre{border-color:var(--accl);color:var(--acc);background:var(--accs)}
+.dbtn.unr{border-color:var(--viol);color:var(--vio);background:var(--vios)}
+.qcard{border:1px solid var(--rule);border-radius:10px;padding:12px 14px;margin-bottom:9px;
+  background:var(--surface)}
+.qcard .qt{font-size:13px;line-height:1.5}
+.qcard .qw{font-size:11.5px;color:var(--ink3);margin-top:3px}
+.dchip{font-family:var(--mono);font-size:9.5px;padding:2px 7px;border-radius:4px;
+  border:1px solid var(--rule2);color:var(--ink3);background:var(--s2)}
+.dchip.chg{border-color:var(--okl);color:var(--ok);background:var(--oks)}
+.dchip.pre{border-color:var(--accl);color:var(--acc);background:var(--accs)}
+.dchip.unr{border-color:var(--viol);color:var(--vio);background:var(--vios)}
+.insedit{width:100%;border:1px solid var(--rule2);border-radius:6px;padding:6px 8px;
+  background:var(--surface);font-size:12px;line-height:1.5;outline:none;resize:vertical;
+  font-family:var(--sans);min-height:52px}
+.insedit:focus{border-color:var(--acc);box-shadow:0 0 0 2px var(--accs)}
+.vrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:baseline;
+  padding:6px 8px;font-size:12px;border-radius:6px}
+.vrow:hover{background:var(--s2)}
+.vrow .vv{font-family:var(--mono);font-size:10.5px;color:var(--acc)}
+.vrow .va{color:var(--ink2)}
+.vrow .vt{font-family:var(--mono);font-size:9.5px;color:var(--ink3)}
+.sealbadge{font-family:var(--mono);font-size:9.5px;padding:2px 7px;border-radius:4px;
+  border:1px dashed var(--viol);color:var(--vio);background:var(--vios)}
 .step .s1{font-size:12.5px;font-weight:500;display:flex;gap:7px;align-items:baseline;flex-wrap:wrap}
 .step .s2{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-top:2px;line-height:1.55}
 
@@ -268,24 +296,13 @@ svg.ic.sm{width:13px;height:13px}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 .center{max-width:620px;margin:0 auto;padding:44px 0}
-.imp{max-width:780px;margin:0 auto;width:100%;display:flex;flex-direction:column;
-  flex:1;min-height:0;padding:26px 0 8px}
-.imp h1{font-family:var(--disp);font-size:24px;font-weight:600;letter-spacing:-.025em;margin:0 0 4px}
-.imp .sub{color:var(--ink3);font-size:13px;margin:0 0 18px}
-.imp .presets{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+
 .pcard{display:flex;flex-direction:column;gap:3px;padding:10px 14px;border-radius:10px;
   border:1px solid var(--rule2);background:var(--surface);transition:all .16s;min-width:168px}
 .pcard:hover{border-color:var(--acc);box-shadow:0 0 0 3px var(--accs)}
 .pcard .pn{font-size:13px;font-weight:600}
 .pcard .pd{font-family:var(--mono);font-size:10px;color:var(--ink3)}
-.codewrap{flex:1;min-height:0;display:flex;position:relative;border:1px solid var(--rule2);
-  border-radius:12px;background:var(--surface);box-shadow:var(--sh);overflow:hidden;
-  transition:border-color .16s,box-shadow .16s}
-.codewrap:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--accs),var(--sh)}
-.codewrap textarea{flex:1;border:0;background:transparent;outline:none;resize:none;
-  font-family:var(--mono);font-size:12.5px;line-height:1.85;padding:16px 18px;color:var(--ink)}
-.codewrap textarea::placeholder{color:var(--ink3);opacity:.75}
-.impbar{display:flex;gap:10px;align-items:center;padding:14px 0 0;flex-shrink:0}
+
 .chiprow{display:flex;gap:7px;flex-wrap:wrap;max-width:840px;margin:0 auto 9px}
 .sug{font-size:12.5px;padding:5px 13px;border-radius:16px;border:1px solid var(--rule2);
   color:var(--ink2);background:var(--surface);transition:all .14s;white-space:nowrap}
@@ -366,7 +383,6 @@ function ic(n,cls){
   var p=document.createElementNS("http://www.w3.org/2000/svg","path");
   p.setAttribute("d",PATHS[n]||PATHS.dot);s.appendChild(p);return s;}
 
-
 /* ---------- hero：六叶光圈 ---------- */
 function hero(){
   var NS="http://www.w3.org/2000/svg";
@@ -418,17 +434,22 @@ function hero(){
   return h("div",{class:"hero"},[s]);
 }
 
+var DISP={change:{t:"需要修改",c:"chg"},preserve:{t:"保持现状",c:"pre"},
+  unresolved:{t:"暂不决定",c:"unr"}};
+
 var PRESETS=[
  {name:"差旅规划agent",meta:"6 条指令 · 3 个工具",
   text:"# 差旅规划agent\n\n航班中断时帮我重新安排行程。\n\n## 指令\n1. 取回我受影响的日历承诺。\n2. 检索替代行程，剔除不满足硬性约束的选项（行李、证件、乘客数）。\n3. 在剩余选项中选择总价最低者。\n4. 若总价相同，优先同航司、更少中转。\n5. 金额超过 $500 时，先请求我确认。\n6. 确认完成后预订，并报告结果。\n\n## 可用工具\n- calendar.commitments(from, to)\n- flights.search(origin, destination, after)\n- booking.rebook(flight_id)   # 会真实下单\n"},
  {name:"报销审核agent",meta:"6 条指令 · 3 个工具",
+  seed:{"hr.profile": [{"employee_id": "E1042", "name": "林岚", "level": "P4 初级", "dept": "市场", "daily_limit": 200, "escalation_threshold": 800, "restricted_categories": "高档餐饮, 头等舱, 高尔夫"}, {"employee_id": "E2277", "name": "周珂", "level": "M2 经理", "dept": "销售", "daily_limit": 600, "escalation_threshold": 3000, "restricted_categories": "头等舱"}], "receipts.validate": [{"receipt_id": "R-8891", "employee_id": "E1042", "merchant": "云顶轩", "category": "高档餐饮", "amount": 180, "currency": "CNY", "date": "2026-03-09", "invoice_no": "INV-77120"}, {"receipt_id": "R-8892", "employee_id": "E1042", "merchant": "滴滴出行", "category": "市内交通", "amount": 46, "currency": "CNY", "date": "2026-03-09", "invoice_no": "INV-77121"}, {"receipt_id": "R-8893", "employee_id": "E2277", "merchant": "东方航空", "category": "机票", "amount": 4200, "currency": "CNY", "date": "2026-03-10", "invoice_no": ""}]},
   text:"# 报销审核agent\n\n## 指令\n1. 取回提交人的岗位级别与品类限制。\n2. 校验票据必填项（发票号、日期、金额、币种、商户），不满足直接退回。\n3. 金额低于日常额度时直接通过。\n4. 同一商户的条目合并处理。\n5. 金额超过升级阈值时，要求主管签核。\n6. 写明结论与理由，签核完成后入账。\n\n## 可用工具\n- hr.profile(employee_id)\n- receipts.validate(receipt_id)\n- ledger.post(entry)   # 会真实入账\n"}
 ];
 
 /* ---------- 状态 ---------- */
-var S={skill:null,candidate:null,skills:[],active:null,sources:[],viewSource:null,renaming:null,adding:false,model:"",tok:0,busy:false,
+var S={skill:null,candidate:null,skills:[],active:null,sources:[],viewSource:null,reviews:[],history:[],editIns:false,editRows:null,tasksBy:{},curBy:{},gen:0,renaming:null,adding:false,model:"",tok:0,busy:false,
   tasks:[],cur:null,openIns:null,probes:{},situations:[],composing:false};
-function T(){return S.tasks.filter(function(t){return t.id===S.cur;})[0]||null;}
+function tasks(){return (S.tasksBy[S.active]=S.tasksBy[S.active]||[]);}
+function T(){var id=S.curBy[S.active];return tasks().filter(function(t){return t.id===id;})[0]||null;}
 
 /* ---------- api ---------- */
 function post(p,d){return fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},
@@ -443,10 +464,21 @@ function stream(p,d,onMsg){
        ps.forEach(function(l){if(!l.trim())return;var m;try{m=JSON.parse(l);}catch(e){return;}
          if(m.type==="run"&&m.run&&m.run._usage)S.tok+=m.run._usage;onMsg(m);});
        return pump();});})();});}
-function refresh(){return fetch("/api/state").then(function(r){return r.json();}).then(function(st){
+function refresh(){
+  var g=++S.gen;
+  return fetch("/api/state").then(function(r){return r.json();}).then(function(st){
+  if(g!==S.gen)return st;                       // 已有更新的请求在途，丢弃这次
   S.skill=st.skill;S.candidate=st.candidate;S.model=st.model;S.situations=st.situations||[];
   S.skills=st.skills||[];S.sources=st.sources||[];
-  if(S.active!==st.active){S.active=st.active;S.tasks=[];S.cur=null;S.openIns=null;}
+  S.reviews=st.reviews||[];S.history=st.history||[];
+  if(S.active!==st.active){
+    S.active=st.active;
+    S.openIns=null;S.viewSource=null;S.srcDraft=null;S.probes={};
+  }
+  // 数据源可能已不存在（换了 skill 或被改名）
+  if(S.viewSource&&!S.sources.filter(function(x){return x.tool===S.viewSource;}).length)
+    S.viewSource=null;
+  if(S.srcDraft&&S.srcDraft.tool!==S.viewSource)S.srcDraft=null;
   S.renaming=null;S.adding=false;
   S.probes={};(st.probes||[]).forEach(function(p){if(!p.n)return;
     (S.probes[p.sid]=S.probes[p.sid]||{});
@@ -455,9 +487,9 @@ function refresh(){return fetch("/api/state").then(function(r){return r.json();}
 
 /* ---------- 任务 ---------- */
 function newTask(){
-  var t={id:"t"+Date.now(),title:"新任务",task:"",snap:null,phase:"compose",
+  var t={id:"t"+Date.now(),title:"新建任务",task:"",snap:null,phase:"compose",
     runs:[],summary:null,workflow:null,crit:null,compare:null,busy:false,influence:{},hl:null,inflNote:null,inflRun:null,cut:null,cutRun:false};
-  S.tasks.push(t);S.cur=t.id;render();
+  tasks().push(t);S.curBy[S.active]=t.id;render();
 }
 function startTask(text){
   var t=T();if(!t||!text.trim())return;
@@ -475,7 +507,7 @@ function startTask(text){
 }
 function doProbe(kind,n){
   var t=T();if(!t||!t.snap||t.busy)return;
-  t.busy=true;t.probe={kind:kind,n:n,done:false,note:"准备中…",runs:[]};render();
+  t.busy=true;t.probe={kind:kind,n:n,done:false,note:"准备中",runs:[]};render();
   stream("/api/probe",{snapshot:t.snap.id,kind:kind,n:n,k:4},function(m){
     if(m.type==="probe"){t.probe.note=m.note;render();}
     else if(m.type==="run"){t.probe.runs.push(m.run);
@@ -512,35 +544,76 @@ function doExpect(text){
     if(d.error){t.crit={error:d.error};return render();}
     t.crit={commitment:text,candidates:d.candidates,tested_on:d.tested_on};render();});
 }
-function chooseCrit(c){
-  var t=T();
+function chooseCrit(c){var t=T();t.crit.picked=c;render();}
+function commitSituation(disp){
+  var t=T(),c=t.crit.picked;
   post("/api/situation",{snapshot:t.snap.id,commitment:t.crit.commitment,criterion:c,
-    disposition:"mod",label:c.label}).then(function(){t.crit=null;refresh();});
+    disposition:disp,label:c.label}).then(function(){
+      var txt=t.crit.commitment;t.crit=null;
+      if(disp==="change")askContrast(txt); else refresh();});
+}
+function askContrast(commitment){
+  var t=T();t.busy=true;t.contrast={loading:true};render();
+  post("/api/contrast",{commitment:commitment}).then(function(d){
+    t.busy=false;
+    t.contrast=(d.situations&&d.situations.length)?{items:d.situations}:null;
+    refresh();});
+}
+function commitContrast(item,disp,idx){
+  var t=T();
+  post("/api/situation",{snapshot:t.snap.id,commitment:item.text,criterion:null,
+    disposition:disp,label:"",sealed:(idx===0)}).then(function(){
+      item.done=disp;refresh();});
+}
+function decide(action,reason,t){
+  var out=(t&&t.compare)?t.compare.rows.filter(function(r){return r.done;}).map(function(r){
+    return {expectation:r.commitment,disposition:r.disposition,conflict:!!r.conflict};}):[];
+  return post("/api/decide",{action:action,reason:reason,outcome:out});
 }
 function doDraft(){
+  var t=T(),fb=[];
+  if(t&&t.compare)fb=t.compare.rows.filter(function(r){return r.done;}).map(function(r){
+    return {expectation:r.commitment,disposition:r.disposition,
+      result:r.conflict?"failed":"ok"};});
   S.busy=true;render();
-  post("/api/draft",{}).then(function(d){S.busy=false;
+  post("/api/draft",{feedback:fb}).then(function(d){S.busy=false;
     if(d.error)return alert(d.error);S.candidate=d.candidate;render();});
 }
 function compare(){
   var t=T();if(!S.situations.length)return;
   t.busy=true;
   var rows=S.situations.map(function(x){return {commitment:x.commitment,sid:x.sid,
-    criterion:x.criterion,before:null,after:null,done:false};});
+    criterion:x.criterion,disposition:x.disposition||"change",sealed:!!x.sealed,
+    before:null,after:null,bsig:null,asig:null,done:false};});
   t.compare={rows:rows,done:false};render();
   var left=rows.length*2;
   rows.forEach(function(r){["base","draft"].forEach(function(w){
     stream("/api/run",{snapshot:r.sid,k:3,criterion:r.criterion,
       variant:w==="draft"?{draft:true}:{}},function(m){
-      if(m.type==="done"){var s=m.summary,v=s.tot?(s.pass>s.tot/2):null;
-        if(w==="base")r.before=v;else r.after=v;
-        if(r.before!=null&&r.after!=null){r.done=true;r.conflict=(r.before===true&&r.after===false);}
+      if(m.type==="done"){
+        var s=m.summary,v=s.tot?(s.pass>s.tot/2):null;
+        if(w==="base"){r.before=v;r.bsig=s.top;}else{r.after=v;r.asig=s.top;}
+        var haveBoth=(r.bsig!=null&&r.asig!=null);
+        if(haveBoth){
+          r.done=true;
+          var moved=(r.bsig!==r.asig);          // 行为是否实质改变
+          if(r.disposition==="change")
+            r.conflict=(r.criterion?(r.after!==true):!moved);
+          else if(r.disposition==="preserve")
+            r.conflict=(r.criterion&&r.before!=null&&r.after!=null)
+                        ?(r.before===true&&r.after===false):moved;
+          else r.conflict=moved;                 // 暂不决定：变了就是被替你定了
+          r.moved=moved;
+        }
         left--;if(!left){t.compare.done=true;t.busy=false;}render();}});
   });});
 }
 
-function selectSkill(id){S.busy=true;render();
-  post("/api/skill/select",{id:id}).then(function(){S.busy=false;S.active=null;refresh();});}
+function selectSkill(id){
+  if(S.busy||S.active===id)return;
+  S.busy=true;S.openIns=null;S.viewSource=null;S.srcDraft=null;render();
+  post("/api/skill/select",{id:id}).then(function(){S.busy=false;refresh();})
+   .catch(function(){S.busy=false;render();});}
 function doRename(id,name){
   if(!name||!name.trim()){S.renaming=null;return render();}
   post("/api/skill/rename",{id:id,name:name.trim()}).then(refresh);}
@@ -557,10 +630,10 @@ function importPack(){
   f.addEventListener("change",function(){
     var file=f.files&&f.files[0];if(!file)return;
     var rd=new FileReader();
-    rd.onload=function(){try{var pack=JSON.parse(rd.result);}catch(e){return alert("不是有效的 JSON");}
+    rd.onload=function(){try{var pack=JSON.parse(rd.result);}catch(e){return alert("文件不是有效的 JSON");}
       S.busy=true;render();
       post("/api/import",pack).then(function(d){S.busy=false;
-        if(d.error)return alert(d.error);S.active=null;refresh();});};
+        if(d.error)return alert(d.error);refresh();});};
     rd.readAsText(file);});
   f.click();}
 
@@ -571,6 +644,29 @@ function sideView(){
   var src=S.candidate||S.skill,t=T(),pv=(t&&t.snap&&S.probes[t.snap.id])||{};
 
   // ---- SKILLS ----
+  if(S.editIns){
+    var draftRows=S.editRows||((S.candidate||S.skill).instructions.map(function(i){
+      return {n:i.n,text:i.text};}));
+    S.editRows=draftRows;
+    var es=h("div",{class:"sect"},[h("div",{class:"sh"},[h("span",{},["编辑指令"]),
+      h("span",{class:"grow"})])]);
+    draftRows.forEach(function(it,ix){
+      var ta=h("textarea",{class:"insedit"});ta.value=it.text;
+      ta.addEventListener("input",function(){it.text=ta.value;});
+      es.appendChild(h("div",{style:"padding:5px 8px"},[
+        h("div",{class:"mn",style:"margin-bottom:3px"},["指令 "+it.n]),ta]));});
+    es.appendChild(h("div",{style:"display:flex;gap:7px;padding:9px 8px 0"},[
+      h("button",{class:"btn sm pri",disabled:S.busy?"":null,onclick:function(){
+        S.busy=true;render();
+        post("/api/edit",{instructions:draftRows}).then(function(d){
+          S.busy=false;S.editIns=false;S.editRows=null;
+          if(d.error)return alert(d.error);refresh();});}},[ic("check","sm"),"保存为草稿"]),
+      h("button",{class:"btn sm",onclick:function(){
+        S.editIns=false;S.editRows=null;render();}},["取消"])]));
+    s.appendChild(es);
+    return;
+  }
+
   var ks=h("div",{class:"sect"},[h("div",{class:"sh"},[h("span",{},["skills"]),
     h("span",{class:"grow"}),
     h("button",{class:"iconb",title:"导入评审包",onclick:importPack},[ic("down","sm")]),
@@ -596,17 +692,20 @@ function sideView(){
   });
   ks.appendChild(h("button",{class:"skrow",style:"color:var(--ink3)",
     onclick:function(){S.adding=true;render();}},[h("span",{class:"bul"}),
-    h("span",{},[h("div",{class:"nm"},["导入新 skill"])]),null]));
+    h("span",{},[h("div",{class:"nm"},["切换 skill"])]),null]));
   s.appendChild(ks);
 
   var sec=h("div",{class:"sect"},[h("div",{class:"sh"},[h("span",{},["指令"]),
-    h("span",{class:"grow"}),S.candidate?h("span",{class:"tag a"},["草稿"])
+    h("span",{class:"grow"}),
+    h("button",{class:"iconb",title:"编辑指令",
+      onclick:function(){S.editIns=true;S.editRows=null;render();}},[ic("pen","sm")]),
+    S.candidate?h("span",{class:"tag a"},["草稿"])
       :h("span",{class:"tag"},["v"+S.skill.version])])]);
   src.instructions.forEach(function(it){
     var inf=(t&&t.influence&&t.influence[it.n])||null,vt=null,col="";
-    if(inf==="controls"){vt="在管这件事";col="var(--ok)";}
-    else if(inf==="dead"){vt="写了但没起作用";col="var(--bad)";}
-    else if(inf==="unsure"){vt="还判断不了";col="var(--vio)";}
+    if(inf==="controls"){vt="影响该行为";col="var(--ok)";}
+    else if(inf==="dead"){vt="对结果无影响";col="var(--bad)";}
+    else if(inf==="unsure"){vt="证据不足";col="var(--vio)";}
     sec.appendChild(h("button",{class:"ins"+(S.openIns===it.n?" on":""),
       onclick:function(){S.openIns=S.openIns===it.n?null:it.n;render();}},[
       h("span",{class:"i"},[String(it.n)]),
@@ -616,7 +715,7 @@ function sideView(){
       sec.appendChild(h("div",{class:"pm"},[
         h("button",{class:"chipbtn",disabled:(!t||!t.snap||t.busy)?"":null,
           onclick:function(e){e.stopPropagation();askInfluence(it.n);}},
-          [ic("scale","sm"),"这句话有用吗"])]));
+          [ic("scale","sm"),"检验影响"])]));
     }
   });
   s.appendChild(sec);
@@ -624,12 +723,28 @@ function sideView(){
   var s3=h("div",{class:"sect"},[h("div",{class:"sh"},[h("span",{},["情况集"]),
     h("span",{class:"grow"}),h("span",{class:"tag"},[String(S.situations.length)])])]);
   if(!S.situations.length)s3.appendChild(h("div",{class:"hint",style:"padding:0 8px"},
-    ["尚无"]));
+    ["暂无"]));
   S.situations.forEach(function(x){
+    var dz=DISP[x.disposition]||DISP.change;
     s3.appendChild(h("div",{style:"padding:7px 8px"},[
       h("div",{style:"font-size:12px;line-height:1.45"},[x.commitment.slice(0,40)]),
-      h("div",{class:"mn",style:"margin-top:2px"},[x.label||""])]));});
+      h("div",{style:"margin-top:4px"},[h("span",{class:"dchip "+dz.c},[dz.t])])]));});
   s.appendChild(s3);
+
+  if((S.history&&S.history.length)||(S.reviews&&S.reviews.length)){
+    var hs=h("div",{class:"sect"},[h("div",{class:"sh"},["版本与决定"])]);
+    (S.history||[]).forEach(function(v){
+      hs.appendChild(h("div",{class:"vrow"},[h("span",{class:"vv"},["v"+v.version]),
+        h("span",{class:"va"},[v.n+" 条指令"]),h("span",{class:"vt"},[v.hash])]));});
+    (S.reviews||[]).slice().reverse().slice(0,4).forEach(function(r){
+      var A={publish:"发布",revise:"重新起草",gather:"补充执行",defer:"暂缓"};
+      hs.appendChild(h("div",{class:"vrow"},[
+        h("span",{class:"vv"},[A[r.action]||r.action]),
+        h("span",{class:"va"},[r.reason||"—"]),
+        h("span",{class:"vt"},[new Date(r.at*1000).toLocaleTimeString("zh-CN",
+          {hour:"2-digit",minute:"2-digit"})])]));});
+    s.appendChild(hs);
+  }
 
   // ---- 数据源 ----
   var ds=h("div",{class:"sect"},[h("div",{class:"sh"},["数据源"])]);
@@ -641,15 +756,15 @@ function sideView(){
       h("span",{class:"kind "+x.kind}),
       h("span",{},[h("div",{class:"nm"},[x.tool]),
         h("div",{class:"ct"+(empty?" warn":"")},
-          [KIND[x.kind]+(x.kind==="data"?(empty?" · 还没有数据":" · "+x.n+" 条"):"")])]),
+          [KIND[x.kind]+(x.kind==="data"?(empty?" · 暂无数据":" · "+x.n+" 条"):"")])]),
       x.kind==="data"?ic("chev","sm"):null]));});
   s.appendChild(ds);
 
-  if(t&&t.snap)s.appendChild(h("div",{class:"sect"},[h("div",{class:"sh"},["本次取数"]),
+  if(t&&t.snap)s.appendChild(h("div",{class:"sect"},[h("div",{class:"sh"},["本次输入"]),
     h("div",{class:"hint",style:"padding:0 8px"},[t.snap.summary||t.snap.task]),
     h("div",{class:"mn",style:"padding:5px 8px 0"},["工具返回值已冻结"]),
     h("div",{style:"padding:8px 8px 0"},[h("button",{class:"chipbtn",
-      disabled:t.busy?"":null,onclick:checkInput},[ic("shuffle","sm"),"它看了这些信息吗"])])]));
+      disabled:t.busy?"":null,onclick:checkInput},[ic("shuffle","sm"),"检验数据是否参与决策"])])]));
 }
 
 /* ---------- 数据源编辑 ---------- */
@@ -663,8 +778,8 @@ function sourceEditor(src){
   if(src.kind!=="data"){
     return slot(src.tool,"layers",h("span",{class:"tag"},[KIND[src.kind]]),
       h("div",{class:"empt"},[src.kind==="query"
-        ?"这是外部服务，每次执行时按参数查询并记录返回值。"
-        :"这会改变外部状态，评审期间只记录意图，不真正执行。"]));
+        ?"外部服务。每次执行按参数查询，并记录返回值。"
+        :"写入型。评审期间仅记录调用意图，不实际执行。"]));
   }
 
   var cols=[];rows.forEach(function(r){Object.keys(r||{}).forEach(function(k){
@@ -673,7 +788,7 @@ function sourceEditor(src){
 
   var body=h("div",{});
   if(!rows.length){
-    body.appendChild(h("div",{class:"empt"},["还没有数据"]));
+    body.appendChild(h("div",{class:"empt"},["暂无数据"]));
   }else{
     var tb=h("tbody");
     rows.forEach(function(r,ri){
@@ -692,12 +807,12 @@ function sourceEditor(src){
   body.appendChild(h("div",{style:"display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"},[
     h("button",{class:"btn",onclick:function(){
       var blank={};cols.forEach(function(c){blank[c]="";});rows.push(blank);render();}},
-      [ic("plus"),"添加一条"]),
+      [ic("plus"),"新增"]),
     h("button",{class:"btn",onclick:function(){
-      var txt=prompt("粘贴 JSON 数组");if(!txt)return;
+      var txt=prompt("导入 JSON 数组");if(!txt)return;
       try{var v=JSON.parse(txt);if(!Array.isArray(v))throw 0;
-        S.srcDraft={tool:src.tool,rows:v};render();}catch(e){alert("需要一个 JSON 数组");}}},
-      [ic("down"),"粘贴 JSON"]),
+        S.srcDraft={tool:src.tool,rows:v};render();}catch(e){alert("内容需为 JSON 数组");}}},
+      [ic("down"),"导入 JSON"]),
     h("span",{class:"grow"}),
     h("button",{class:"btn pri",onclick:function(){
       S.busy=true;render();
@@ -724,13 +839,13 @@ function wfBody(run,opts){
     c.appendChild(h("div",{class:"s1"},[h("span",{},[st.title||""])]));
     if(st.detail)c.appendChild(h("div",{class:"s2"},[st.detail]));
     if(cut&&cut===i)c.appendChild(h("div",{class:"cut"},[h("span",{class:"ln"}),
-      h("span",{},["这个信息没有进入后面的判断"])]));
+      h("span",{},["该数据未参与后续决策"])]));
     row.appendChild(c);box.appendChild(row);
   });
   if(run.outcome)box.appendChild(h("div",{style:"font-size:13px;margin-top:3px"},[run.outcome]));
   if(fork&&fork.alt_outcome)box.appendChild(h("div",{class:"fork",style:"margin-top:9px"},[
     h("div",{class:"r"},[h("span",{class:"br"})]),
-    h("div",{class:"c"},[h("span",{class:"lab"},[ic("shuffle","sm"),"有时它会这样做"]),
+    h("div",{class:"c"},[h("span",{class:"lab"},[ic("shuffle","sm"),"另一种结果"]),
       h("div",{class:"alt"},[fork.alt_outcome])])]));
   return box;
 }
@@ -740,38 +855,34 @@ function workView(){
   var wrap=w.parentNode;
 
   if(!S.skill||S.adding){
-    var ta=h("textarea",{spellcheck:"false",
-      placeholder:"# 我的 skill\n\n## 指令\n1. …\n2. …\n\n## 可用工具\n- calendar.commitments(from, to)\n- flights.search(origin, destination, after)"});
-    var err=h("div",{class:"err"});
-    w.className="wrap";
-    var pres=h("div",{class:"presets"});
+    w.className="wrap mid";
+    var pick=h("div",{class:"presets",style:"justify-content:center"});
     PRESETS.forEach(function(pz){
-      pres.appendChild(h("button",{class:"pcard",onclick:function(){
-        ta.value=pz.text;ta.focus();}},[
+      pick.appendChild(h("button",{class:"pcard",disabled:S.busy?"":null,
+        onclick:function(){
+          S.busy=true;render();
+          post("/api/skill",{text:pz.text}).then(function(d){
+            if(d.error){S.busy=false;return alert(d.error);}
+            return post("/api/seed",{sources:pz.seed||{}}).then(function(){
+              S.busy=false;S.adding=false;refresh();});});}},[
         h("span",{class:"pn"},[pz.name]),
         h("span",{class:"pd"},[pz.meta])]));});
-    w.appendChild(h("div",{class:"imp fade"},[
-      h("h1",{},["粘贴一个 skill"]),
-      h("p",{class:"sub"},["指令、工具、配置都会被解析出来"]),
-      pres,
-      h("div",{class:"codewrap"},[ta]),
-      h("div",{class:"impbar"},[
-        h("button",{class:"btn pri",disabled:S.busy?"":null,onclick:function(){
-          if(!ta.value.trim())return;S.busy=true;render();
-          post("/api/skill",{text:ta.value}).then(function(d){S.busy=false;
-            if(d.error){err.textContent=d.error;return render();}
-            S.active=null;refresh();});}},
-          [S.busy?h("span",{class:"spin"}):ic("layers"),"导入"]),
-        S.skills.length?h("button",{class:"btn",onclick:function(){S.adding=false;render();}},
-          [ic("x"),"取消"]):null, err])]));
+    w.appendChild(h("div",{class:"center fade",style:"padding-top:0"},[
+      hero(),
+      h("div",{style:"text-align:center;margin-top:20px"},[
+        h("div",{style:"font-size:15px;font-weight:600;margin-bottom:14px"},
+          [S.busy?"解析中":"选择 skill"]),
+        pick,
+        S.skills.length?h("button",{class:"btn",style:"margin-top:14px",
+          onclick:function(){S.adding=false;render();}},[ic("x"),"取消"]):null])]));
     return;
   }
 
   if(S.viewSource){
     var src=(S.sources||[]).filter(function(x){return x.tool===S.viewSource;})[0];
     w.className="wrap";
-    if(src)w.appendChild(sourceEditor(src));
-    return;
+    if(src){w.appendChild(sourceEditor(src));return;}
+    S.viewSource=null;   // 落空则回到正常视图，不留白屏
   }
 
   var need=(S.sources||[]).filter(function(x){return x.kind==="data"&&!x.n;});
@@ -783,17 +894,17 @@ function workView(){
         hero(),
         h("div",{style:"text-align:center;margin-top:18px"},[
           h("div",{style:"font-size:14px;margin-bottom:4px"},
-            [need.map(function(x){return x.tool;}).join("、")+" 还没有数据"]),
-          h("div",{class:"hint",style:"margin-bottom:14px"},["它要读你的数据才能工作"]),
+            [need.map(function(x){return x.tool;}).join("、")+" 暂无数据"]),
+          h("div",{class:"hint",style:"margin-bottom:14px"},["执行前需要该数据源"]),
           h("button",{class:"btn pri",onclick:function(){S.viewSource=need[0].tool;render();}},
-            [ic("pen"),"去填"])])]));
+            [ic("pen"),"录入数据"])])]));
     }else w.appendChild(hero());
     return;
   }
   w.className="wrap";
 
   if(t.phase==="snap"){
-    w.appendChild(slot("生成世界","layers",h("span",{class:"spin"}),
+    w.appendChild(slot("准备执行环境","layers",h("span",{class:"spin"}),
       h("div",{class:"mn"},[t.task])));
     return;
   }
@@ -807,7 +918,7 @@ function workView(){
     h("span",{style:"display:flex;gap:6px;align-items:center"},[
       t.busy?h("span",{class:"spin"}):null,
       (t.hl&&t.hl.length)?h("button",{class:"chipbtn",
-        onclick:function(){t.hl=null;t.inflNote=null;render();}},["取消高亮"]):null]),
+        onclick:function(){t.hl=null;t.inflNote=null;render();}},["清除高亮"]):null]),
     t.workflow?wfBody(t.workflow,{highlight:t.hl,
       fork:(t.summary&&!t.summary.stable)?t.summary.fork:null,cut:t.cut})
       :h("div",{class:"mn"},[h("span",{class:"spin"})])));
@@ -815,20 +926,20 @@ function workView(){
   // 发现：只在有话可说时出现
   var finds=[];
   if(t.summary&&!t.summary.stable)
-    finds.push(["v","同样的情况，它做了两种不同的事"]);
-  if(t.inflNote==="controls")finds.push(["g","这句话在管上面高亮的步骤"]);
-  if(t.inflNote==="dead")finds.push(["b","这句话写了，但对结果没有影响"]);
-  if(t.inflNote==="unsure")finds.push(["v","它的行为本身就不稳定，暂时判断不了"]);
-  if(t.cut===0)finds.push(["b","你给的信息没有进入它的判断"]);
+    finds.push(["v","相同输入下出现了两种结果"]);
+  if(t.inflNote==="controls")finds.push(["g","该指令影响上方高亮的步骤"]);
+  if(t.inflNote==="dead")finds.push(["b","该指令存在，但对结果没有影响"]);
+  if(t.inflNote==="unsure")finds.push(["v","行为本身不稳定，证据不足以判定"]);
+  if(t.cut===0)finds.push(["b","该数据源未参与决策"]);
   if(finds.length)w.appendChild(slot("发现","dot",null,
     h("div",{style:"display:flex;flex-direction:column;gap:8px"},
       finds.map(function(f){return h("div",{style:"display:flex;gap:9px;align-items:center"},[
         h("span",{class:"tag "+f[0]},["·"]),h("span",{style:"font-size:13.5px"},[f[1]])]);}))));
 
-  if(t.inflRun)w.appendChild(slot("正在验证","scale",h("span",{class:"spin"}),
+  if(t.inflRun)w.appendChild(slot("验证中","scale",h("span",{class:"spin"}),
     h("div",{class:"mn"},["指令 "+t.inflRun.n])));
-  if(t.cutRun)w.appendChild(slot("正在验证","shuffle",h("span",{class:"spin"}),
-    h("div",{class:"mn"},["改动一个输入再跑一次"])));
+  if(t.cutRun)w.appendChild(slot("验证中","shuffle",h("span",{class:"spin"}),
+    h("div",{class:"mn"},["变更一项输入后重新执行"])));
 
   if(t.crit){
     var body=h("div",{});
@@ -841,11 +952,35 @@ function workView(){
         (c.trial||[]).forEach(function(x,i){
           if(i)tr.appendChild(h("span",{class:"seg",style:"max-width:14px;min-width:14px"}));
           tr.appendChild(h("span",{class:"p "+(x===true?"ok":x===false?"no":"")}));});
-        tr.appendChild(h("span",{class:"cap"},["在已跑过的执行上"]));
+        tr.appendChild(h("span",{class:"cap"},["基于已有执行"]));
         body.appendChild(h("button",{class:"crit",onclick:function(){chooseCrit(c);}},[
           h("div",{class:"l"},[c.label||""]),tr]));});
     }
-    w.appendChild(slot("怎么算做对了","check",null,body));
+    if(t.crit.picked)body.appendChild(h("div",{style:"margin-top:12px;border-top:1px solid var(--rule);padding-top:11px"},[
+      h("div",{style:"font-size:13px;font-weight:600;margin-bottom:2px"},["处置方式"]),
+      h("div",{class:"disp"},["change","preserve","unresolved"].map(function(k){
+        return h("button",{class:"dbtn "+DISP[k].c,onclick:function(){commitSituation(k);}},[DISP[k].t]);}))]));
+    w.appendChild(slot("判定标准","check",null,body));
+  }
+
+  if(t.contrast){
+    var cb=h("div",{});
+    if(t.contrast.loading)cb.appendChild(h("div",{class:"mn"},[h("span",{class:"spin"})]));
+    else (t.contrast.items||[]).forEach(function(it,ix){
+      var card=h("div",{class:"qcard"},[
+        h("div",{style:"display:flex;gap:8px;align-items:baseline"},[
+          h("div",{class:"qt",style:"flex:1"},[it.text]),
+          ix===0?h("span",{class:"sealbadge"},["对起草模型保密"]):null]),
+        it.why?h("div",{class:"qw"},[it.why]):null]);
+      if(it.done)card.appendChild(h("div",{style:"margin-top:8px"},[
+        h("span",{class:"dchip "+DISP[it.done].c},[DISP[it.done].t])]));
+      else card.appendChild(h("div",{class:"disp"},["preserve","change","unresolved"].map(function(k){
+        return h("button",{class:"dbtn "+DISP[k].c,
+          onclick:function(){commitContrast(it,k,ix);}},[DISP[k].t]);})));
+      cb.appendChild(card);});
+    cb.appendChild(h("div",{style:"margin-top:4px"},[
+      h("button",{class:"btn",onclick:function(){t.contrast=null;render();}},["跳过"])]));
+    w.appendChild(slot("相关情况","layers",null,cb));
   }
 
   if(S.candidate){
@@ -862,29 +997,44 @@ function workView(){
       h("button",{class:"chipbtn",onclick:function(){post("/api/discard",{}).then(refresh);}},["丢弃"]),
       h("div",{},[dv,h("div",{style:"margin-top:12px"},[
         h("button",{class:"btn pri",disabled:t.busy?"":null,onclick:compare},
-          [ic("scale"),"看它会不会弄坏别的"])])])));
+          [ic("scale"),"验证影响范围"])])])));
   }
 
   if(t.compare){
     var cf=t.compare.rows.filter(function(r){return r.done&&r.conflict;}).length;
     var rows=h("div",{});
     t.compare.rows.forEach(function(r){
+      var dz=DISP[r.disposition]||DISP.change;
+      var msg=r.done?(r.conflict
+        ?({preserve:"该项已被破坏",change:"未达成预期",
+           unresolved:"已被自行决定"}[r.disposition])
+        :({preserve:"已保持",change:"已达成",unresolved:"行为未变"}[r.disposition]))
+        :"运行中";
       var dr=h("div",{class:"dotrow"+(r.conflict?" broke":"")},[
-        h("span",{class:"p "+(r.before===true?"ok":r.before===false?"no":"")}),
+        h("span",{class:"p "+(r.bsig!=null?"ok":"")}),
         h("span",{class:"seg"}),
-        h("span",{class:"p "+(r.after===true?"ok":r.after===false?"no":"")}),
-        h("span",{class:"cap"},[r.done?(r.conflict?"这次改动把它弄坏了":"保持住了"):"运行中"])]);
+        h("span",{class:"p "+(r.done?(r.conflict?"no":"ok"):"")}),
+        h("span",{class:"cap"},[msg])]);
       rows.appendChild(h("div",{class:"sitcard"+(r.conflict?" broke":"")},[
-        h("div",{style:"font-size:12.5px"},[r.commitment.slice(0,54)]),dr]));});
-    w.appendChild(slot("这次改动的影响","scale",
+        h("div",{style:"display:flex;gap:8px;align-items:baseline"},[
+          h("span",{style:"font-size:12.5px;flex:1"},[r.commitment.slice(0,52)]),
+          r.sealed?h("span",{class:"sealbadge"},["独立检验"]):null,
+          h("span",{class:"dchip "+dz.c},[dz.t])]),dr]));});
+    w.appendChild(slot("修改影响","scale",
       t.compare.done?h("span",{class:"tag "+(cf?"b":"g")},
-        [cf?cf+" 项被弄坏":"没有弄坏别的"]):h("span",{class:"spin"}),
+        [cf?cf+" 项未达预期":"全部符合预期"]):h("span",{class:"spin"}),
       h("div",{},[rows,t.compare.done?h("div",{style:"display:flex;gap:8px;margin-top:6px"},[
-        h("button",{class:"btn pri",disabled:cf?"":null,title:cf?"先解决被弄坏的那几项":"",
+        h("button",{class:"btn pri",disabled:cf?"":null,title:cf?"请先处理未达预期的项":"",
           onclick:function(){post("/api/publish",{}).then(function(){t.compare=null;refresh();});}},
-          [ic("ship"),"用这一版"]),
-        h("button",{class:"btn",onclick:doDraft},[ic("edit"),"再改一版"]),
-        h("button",{class:"btn",onclick:function(){t.compare=null;render();}},[ic("pause"),"先放着"])
+          [ic("ship"),"发布"]),
+        h("button",{class:"btn",onclick:function(){
+          decide("revise","",t).then(doDraft);}},[ic("edit"),"重新起草"]),
+        h("button",{class:"btn",onclick:function(){
+          var n=prompt("补充执行的原因（可留空）")||"";
+          decide("gather",n,t).then(function(){compare();});}},[ic("scale"),"补充执行"]),
+        h("button",{class:"btn",onclick:function(){
+          var n=prompt("暂缓的原因")||"";
+          decide("defer",n,t).then(function(){t.compare=null;refresh();});}},[ic("pause"),"暂缓"])
       ]):null])));
   }
 }
@@ -910,18 +1060,18 @@ function submit(){
     render();});
 }
 var SCENES=[
-  "UA88 明早从旧金山到芝加哥的航班取消了，帮我改签。",
-  "帮我把下周三去西雅图的行程订好。",
-  "今晚回程的航班延误了 3 小时，看看要不要改。"];
+  "UA88 次日旧金山至芝加哥航班取消，需要改签",
+  "预订下周三前往西雅图的行程",
+  "今晚回程航班延误 3 小时，评估是否改签"];
 function sugsFor(){
   var t=T();
   if(!S.skill)return [];
   if(!t||!t.snap)return SCENES;
   var out=[];
-  if(t.summary&&!S.situations.length)out.push("这个结果不符合预期");
-  if(t.workflow)out.push("为什么会这样做");
-  if(S.situations.length&&!S.candidate)out.push("按我说的改一下指令");
-  if(S.candidate&&!t.compare)out.push("看它会不会弄坏别的");
+  if(t.summary&&!S.situations.length)out.push("结果不符合预期");
+  if(t.workflow)out.push("为什么产生这个结果");
+  if(S.situations.length&&!S.candidate)out.push("根据预期修改指令");
+  if(S.candidate&&!t.compare)out.push("验证影响范围");
   return out;
 }
 function composerView(){
@@ -932,8 +1082,8 @@ function composerView(){
   sugsFor().forEach(function(x){
     sg.appendChild(h("button",{class:"sug",disabled:(S.busy||(t&&t.busy))?"":null,
       onclick:function(){$("ta").value=x;submit();}},[x]));});
-  $("ta").placeholder=(!t||!t.snap)?"描述一个任务，让这个 skill 跑一次"
-    :"说出你期望的行为，或提出新的要求";
+  $("ta").placeholder=(!t||!t.snap)?"输入任务"
+    :"描述期望行为，或提出新的要求";
   $("go").disabled=(S.busy||(t&&t.busy))?"":null;
   var g=$("go");clr(g);g.appendChild(ic((S.busy||(t&&t.busy))?"dot":"play"));
 }
@@ -942,10 +1092,10 @@ function composerView(){
 function tasksView(){
   var b=$("tasks");clr(b);
   if(!S.skill)return;
-  b.appendChild(h("button",{class:"tnew",onclick:newTask},[ic("plus","sm"),"新任务"]));
-  S.tasks.forEach(function(t){
-    b.appendChild(h("button",{class:"tb"+(S.cur===t.id?" on":""),
-      onclick:function(){S.cur=t.id;S.openIns=null;render();}},[
+  b.appendChild(h("button",{class:"tnew",onclick:newTask},[ic("plus","sm"),"新建任务"]));
+  tasks().forEach(function(t){
+    b.appendChild(h("button",{class:"tb"+(S.curBy[S.active]===t.id?" on":""),
+      onclick:function(){S.curBy[S.active]=t.id;S.openIns=null;S.viewSource=null;render();}},[
       h("span",{class:"st"+(t.busy?" run":(t.phase==="ready"?" ok":""))}),t.title]));});
 }
 
@@ -955,7 +1105,7 @@ function render(){
   $("skName").textContent=S.skill?S.skill.name:"—";
   $("skVer").textContent=S.skill?("v"+S.skill.version+" · "+S.skill.hash):"";
   var tt=$("topTags");clr(tt);
-  if(S.candidate)tt.appendChild(h("span",{class:"tag a"},["有草稿"]));
+  if(S.candidate)tt.appendChild(h("span",{class:"tag a"},["存在草稿"]));
   $("meter").textContent=(S.tok?S.tok.toLocaleString()+" tokens · ":"")+(S.model||"");
 }
 $("go").addEventListener("click",function(){submit();});

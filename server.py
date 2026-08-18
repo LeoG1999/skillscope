@@ -28,7 +28,7 @@ PORT = int(os.environ.get("PORT", "8000"))
 
 LOCK = threading.Lock()
 STATE = {"skills": {}, "active": None, "snapshots": {},
-         "runs": [], "situations": [], "probes": [], "seq": 0}
+         "runs": [], "situations": [], "probes": [], "reviews": [], "seq": 0}
 
 
 def cur():
@@ -150,11 +150,23 @@ P_PERTURB = ("Choose one value inside the frozen tool results that the agent's d
              '{"tool":"<tool name>","path":"<path within that tool value, e.g. [0].start>",'
              '"from":<current value>,"to":<new value>,"why":"one line"}')
 
-P_DRAFT = ("Revise the numbered skill so it implements the stated expectations. Change as little as "
-           "possible. Preserve instructions no expectation concerns. Never remove a confirmation or "
-           "safety requirement unless an expectation explicitly asks for it. Keep the original "
+P_DRAFT = ("Revise the numbered skill so it implements the stated expectations. Each expectation "
+           "carries a disposition: change = the behaviour must become this; preserve = this behaviour "
+           "must keep working exactly as it does now, do not weaken it; unresolved = the owner has "
+           "authorised no rule here, so do not silently decide it (keep current behaviour or ask at "
+           "run time). Change as little as possible. Preserve instructions no expectation concerns. "
+           "Never remove a confirmation or safety requirement unless an expectation with disposition "
+           "change explicitly asks for it. Keep the original "
            'language and numbering. Output ONLY JSON: {"instructions":[{"n":1,"text":""}],'
            '"rationale":[{"n":1,"why":"one line"}]}')
+
+P_CONTRAST = ("A workflow owner has just said what they want changed about an agent's behaviour. "
+              "Propose 2 nearby situations that the same repair could accidentally affect: one where "
+              "an existing behaviour should most likely be kept as it is, and one where the right "
+              "policy is genuinely unclear and the owner may not want any rule decided for them. "
+              "Each must be a concrete situation for the same skill, described in one short sentence "
+              "in the owner's language. Output ONLY JSON: "
+              '{"situations":[{"text":"","suggest":"preserve|unresolved","why":"one line"}]}')
 
 P_JUDGE = ("Answer a yes/no question about one recorded execution. Use only the recorded steps, "
            'facts and outcome. Output ONLY JSON: {"pass":true|false,"why":"one line"}')
@@ -434,6 +446,10 @@ class Handler(BaseHTTPRequestHandler):
                 "snapshots": [x for x in STATE["snapshots"].values()
                               if x.get("skill") == STATE["active"]],
                 "situations": mine(STATE["situations"]), "probes": mine(STATE["probes"]),
+                "reviews": mine(STATE.get("reviews") or []),
+                "history": [{"version": v.get("version"), "hash": v.get("hash"),
+                             "n": len(v.get("instructions") or [])}
+                            for v in ((cur() or {}).get("versions") or [])],
                 "model": MODEL, "keyed": bool(API_KEY)})
         return self._send(404, "text/plain", b"not found")
 
@@ -526,7 +542,7 @@ class Handler(BaseHTTPRequestHandler):
             "skill": sk,
             "snapshots": [x for x in STATE["snapshots"].values() if x.get("skill") == a],
             "runs": mine(STATE["runs"]), "situations": mine(STATE["situations"]),
-            "probes": mine(STATE["probes"])})
+            "probes": mine(STATE["probes"]), "reviews": mine(STATE.get("reviews") or [])})
 
     def h_api_import(self):
         b = self._body()
@@ -544,8 +560,9 @@ class Handler(BaseHTTPRequestHandler):
             for snap in b.get("snapshots") or []:
                 snap = dict(snap); snap["skill"] = sid
                 STATE["snapshots"][snap["id"]] = snap
+            STATE.setdefault("reviews", [])
             for key, dst in (("runs", STATE["runs"]), ("situations", STATE["situations"]),
-                             ("probes", STATE["probes"])):
+                             ("probes", STATE["probes"]), ("reviews", STATE["reviews"])):
                 for x in b.get(key) or []:
                     x = dict(x); x["skill"] = sid; dst.append(x)
         return self._json({"skill": sk})
@@ -687,6 +704,18 @@ class Handler(BaseHTTPRequestHandler):
             c["trial"] = [eval_criterion(c, r) for r in trial]
         return self._json({"candidates": out["candidates"], "tested_on": len(trial)})
 
+    def h_api_contrast(self):
+        """针对刚说出的改动，提出可能被牵连的相邻情况，交给用户表态。"""
+        b = self._body()
+        sk = cur()
+        if not sk:
+            return self._json({"error": "尚未导入 skill"}, 400)
+        lines = "\n".join("%d. %s" % (i["n"], i["text"]) for i in sk["instructions"])
+        have = [x["commitment"] for x in mine(STATE["situations"])]
+        out = ask(P_CONTRAST, "SKILL:\n%s\n\nWHAT THEY WANT CHANGED: %s\n\nALREADY RECORDED: %s"
+                  % (lines, b.get("commitment", ""), json.dumps(have, ensure_ascii=False)), 1500)
+        return self._json(out or {"situations": []})
+
     def h_api_situation(self):
         b = self._body()
         st = {"id": nid("t"), "skill": STATE["active"], "sid": b.get("snapshot"),
@@ -825,13 +854,19 @@ class Handler(BaseHTTPRequestHandler):
         sk = cur()
         if not sk:
             return self._json({"error": "尚未导入 skill"}, 400)
-        exps = [{"expectation": s["commitment"], "disposition": s["disposition"]}
+        b = self._body()
+        exps = [{"expectation": s["commitment"], "disposition": s["disposition"],
+                  "task": (STATE["snapshots"].get(s.get("sid")) or {}).get("task", "")}
                 for s in mine(STATE["situations"]) if not s.get("sealed")]
+        fb = b.get("feedback") or []
         ev = [{"instruction": p["n"], "probe": p["kind"], "changed": p["changed"], "note": p["note"]}
               for p in mine(STATE["probes"]) if p.get("n")]
         lines = "\n".join("%d. %s" % (i["n"], i["text"]) for i in sk["instructions"])
-        out = ask(P_DRAFT, "SKILL:\n%s\n\nEXPECTATIONS:\n%s\n\nPROBE EVIDENCE:\n%s" % (
-            lines, json.dumps(exps, ensure_ascii=False), json.dumps(ev, ensure_ascii=False)), 4000)
+        extra = ("\n\nPREVIOUS ATTEMPT — what the last revision actually did. Fix these without "
+                 "losing what already works:\n" + json.dumps(fb, ensure_ascii=False)) if fb else ""
+        out = ask(P_DRAFT, "SKILL:\n%s\n\nEXPECTATIONS:\n%s\n\nPROBE EVIDENCE:\n%s%s" % (
+            lines, json.dumps(exps, ensure_ascii=False),
+            json.dumps(ev, ensure_ascii=False), extra), 4000)
         if not out or "instructions" not in out:
             return self._json(out or {"error": "起草失败"}, 500)
         cand = {"id": sk["id"], "name": sk["name"], "instructions": out["instructions"],
@@ -841,6 +876,46 @@ class Handler(BaseHTTPRequestHandler):
         with LOCK:
             sk["candidate"] = cand
         return self._json({"candidate": cand})
+
+    def h_api_edit(self):
+        """用户直接改写指令，生成或更新候选版本。"""
+        b = self._body()
+        sk = cur()
+        if not sk:
+            return self._json({"error": "尚未导入 skill"}, 400)
+        ins = b.get("instructions")
+        if not ins:
+            return self._json({"error": "内容为空"}, 400)
+        cand = sk.get("candidate")
+        if not cand:
+            cand = {"id": sk["id"], "name": sk["name"], "tools": sk["tools"],
+                    "config": sk["config"], "version": sk["version"] + 1,
+                    "versions": [], "candidate": None, "rationale": []}
+        cand["instructions"] = [{"n": i.get("n"), "text": (i.get("text") or "").strip()}
+                                for i in ins if (i.get("text") or "").strip()]
+        cand["hash"] = shash(cand["instructions"])
+        cand["author"] = "owner"
+        with LOCK:
+            sk["candidate"] = cand
+        return self._json({"candidate": cand})
+
+    def h_api_decide(self):
+        """记录一次评审决定：发布 / 重新起草 / 补充执行 / 暂缓。"""
+        b = self._body()
+        sk = cur()
+        if not sk:
+            return self._json({"error": "尚未导入 skill"}, 400)
+        rec = {"id": nid("v"), "skill": STATE["active"], "action": b.get("action"),
+               "reason": (b.get("reason") or "").strip(),
+               "at": time.time(), "skill_hash": sk["hash"],
+               "candidate_hash": (sk.get("candidate") or {}).get("hash"),
+               "situations": [{"commitment": x["commitment"], "disposition": x["disposition"],
+                               "sealed": bool(x.get("sealed"))}
+                              for x in mine(STATE["situations"])],
+               "outcome": b.get("outcome") or []}
+        with LOCK:
+            STATE.setdefault("reviews", []).append(rec)
+        return self._json({"review": rec})
 
     def h_api_publish(self):
         sk = cur()
@@ -853,6 +928,13 @@ class Handler(BaseHTTPRequestHandler):
             cand["versions"] = hist
             cand["candidate"] = None
             STATE["skills"][sk["id"]] = cand
+            STATE.setdefault("reviews", []).append(
+                {"id": nid("v"), "skill": sk["id"], "action": "publish",
+                 "reason": "", "at": time.time(), "skill_hash": sk["hash"],
+                 "candidate_hash": cand["hash"], "version": cand["version"],
+                 "situations": [{"commitment": x["commitment"], "disposition": x["disposition"],
+                                 "sealed": bool(x.get("sealed"))}
+                                for x in mine(STATE["situations"])]})
         return self._json({"skill": cur()})
 
     def h_api_discard(self):
