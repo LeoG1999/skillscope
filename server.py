@@ -87,7 +87,8 @@ P_PARSE = ("Parse a pasted agent skill document. Extract the numbered instructio
            "side_effecting=true for a tool that changes external state (booking, sending, deleting, "
            "paying). Classify every tool by kind: \"data\" = a dataset the user owns and the agent reads (calendar, preferences, policy, profile, contacts); \"query\" = a lookup against an outside service whose answer depends on parameters (search, pricing, availability); \"write\" = changes external state. Keep instruction text verbatim. For name, use the document's own title exactly as written, without translating or normalising it. Reply in the document's own language. Output "
            'ONLY JSON: {"name":"short name","instructions":[{"n":1,"text":""}],'
-           '"tools":[{"name":"","signature":"","returns":"short shape description",'
+           '"tools":[{"name":"","label":"a short human name in the document\'s language, e.g. 我的日程 / 航班检索 / 预订，never the identifier",'
+           '"signature":"","returns":"short shape description",'
            '"kind":"data|query|write","side_effecting":false}],"config":{}}')
 
 P_SNAP = ("You are the environment in which an agent operates. Given the tool signatures and the "
@@ -438,7 +439,7 @@ class Handler(BaseHTTPRequestHandler):
                            for k, v in STATE["skills"].items()],
                 "active": STATE["active"],
                 "skill": cur(), "candidate": (cur() or {}).get("candidate"),
-                "sources": [{"tool": k, "kind": v.get("kind"),
+                "sources": [{"tool": k, "label": v.get("label") or k, "kind": v.get("kind"),
                              "signature": v.get("signature"), "returns": v.get("returns"),
                              "rows": v.get("rows") or [], "n": len(v.get("rows") or [])}
                             for k, v in ((cur() or {}).get("sources") or {}).items()],
@@ -483,7 +484,8 @@ class Handler(BaseHTTPRequestHandler):
               "instructions": out["instructions"], "tools": out.get("tools") or [],
               "config": out.get("config") or {}, "version": 1,
               "versions": [], "candidate": None,
-              "sources": {t["name"]: {"kind": t.get("kind") or
+              "sources": {t["name"]: {"label": t.get("label") or t["name"],
+                                      "kind": t.get("kind") or
                                       ("write" if t.get("side_effecting") else "query"),
                                       "signature": t.get("signature") or "",
                                       "returns": t.get("returns") or "", "rows": []}
