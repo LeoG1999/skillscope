@@ -438,10 +438,11 @@ def op_run(task, k=3):
         res = ask(P_CONNECT, "SERVICE: %s%s -> %s\n\nPARAMETERS: %s" % (
             name, src.get("signature") or "", src.get("returns") or "",
             json.dumps(a_, ensure_ascii=False)), 3000)
-        if res and "result" in res:
-            tools[name] = res["result"]
-        else:
+        got = res.get("result") if res else None
+        if got is None or (isinstance(got, (list, dict)) and len(got) == 0):
             missing.append(name)
+        else:
+            tools[name] = got
     if not tools:
         return {"error": "没有可用的数据源", "missing": missing}
     snap = {"id": nid("s"), "task": task, "tools": tools, "args": args, "missing": missing,
@@ -826,10 +827,12 @@ class Handler(BaseHTTPRequestHandler):
             res = ask(P_CONNECT, "SERVICE: %s%s -> %s\n\nPARAMETERS: %s" % (
                 name, src.get("signature") or "", src.get("returns") or "",
                 json.dumps(a_, ensure_ascii=False)), 3000)
-            if res and "result" in res:
-                tools[name] = res["result"]
-            else:
+            got = res.get("result") if res else None
+            if got is None or (isinstance(got, (list, dict)) and len(got) == 0):
+                # 外部服务没有返回任何结果：如实报缺，不让执行在空集合上继续
                 missing.append(name)
+            else:
+                tools[name] = got
 
         if not tools:
             return self._json({"error": "没有可用的数据源", "missing": missing}, 400)
