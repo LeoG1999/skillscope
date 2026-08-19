@@ -270,6 +270,13 @@ svg.ic.sm{width:13px;height:13px}
 .ctxi{display:inline-flex;gap:7px;align-items:baseline;font-size:12px;
   border:1px solid var(--rule);border-radius:7px;padding:5px 10px;background:var(--s2)}
 .ctxi .t{font-family:var(--mono);font-size:10.5px;color:var(--acc)}
+.mani{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mani .col{border:1px solid var(--rule);border-radius:9px;padding:11px 13px;background:var(--s2)}
+.mani .col.w{border-color:var(--viol);background:var(--vios)}
+.mani .ch{font-size:12.5px;font-weight:600;margin-bottom:7px}
+.mani ul{margin:0;padding-left:16px;font-size:12px;line-height:1.75;color:var(--ink2)}
+.pel.u{border-color:var(--rule2);color:var(--ink3);background:var(--s2);border-style:dashed}
+@media (max-width:760px){.mani{grid-template-columns:1fr}}
 .disp{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 .dbtn{font-size:12px;padding:5px 12px;border-radius:7px;border:1px solid var(--rule2);
   background:var(--surface);transition:all .14s}
@@ -518,7 +525,7 @@ function refresh(){
   if(g!==S.gen)return st;                       // 已有更新的请求在途，丢弃这次
   S.skill=st.skill;S.candidate=st.candidate;S.model=st.model;S.situations=st.situations||[];
   S.skills=st.skills||[];S.sources=st.sources||[];
-  S.reviews=st.reviews||[];S.history=st.history||[];
+  S.reviews=st.reviews||[];S.history=st.history||[];S.scopeVer=st.scope_version||1;
   if(S.active!==st.active){
     S.active=st.active;
     S.openIns=null;S.viewSource=null;S.srcDraft=null;S.probes={};
@@ -613,10 +620,27 @@ function commitContrast(item,disp,idx){
     disposition:disp,label:"",sealed:(idx===0)}).then(function(){
       item.done=disp;refresh();});
 }
+function blockProbe(row){
+  var t=T();if(!t||t.busy||!S.candidate)return;
+  var n=prompt("检验候选中的哪一条指令？（输入编号）");
+  if(!n)return;
+  t.busy=true;t.block={n:n,done:false};render();
+  stream("/api/blockprobe",{snapshot:row.sid,n:parseInt(n,10),k:3},function(m){
+    if(m.type==="done"){t.block={n:n,done:true,code:m.code,probe:m.probe};
+      t.busy=false;render();}
+  }).catch(function(){t.block=null;t.busy=false;render();});
+}
 function decide(action,reason,t){
   var out=(t&&t.compare)?t.compare.rows.filter(function(r){return r.done;}).map(function(r){
     return {expectation:r.commitment,disposition:r.disposition,conflict:!!r.conflict};}):[];
   return post("/api/decide",{action:action,reason:reason,outcome:out});
+}
+function askManifest(){
+  var t=T();if(!t)return;
+  S.busy=true;render();
+  post("/api/manifest",{}).then(function(d){S.busy=false;
+    if(d.error)return alert(d.error);
+    t.manifest=d;render();});
 }
 function doDraft(){
   var t=T(),fb=[];
@@ -641,9 +665,13 @@ function compare(){
       if(m.type==="done"){
         var s=m.summary,v=s.tot?(s.pass>s.tot/2):null;
         if(w==="base"){r.before=v;r.bsig=s.top;}else{r.after=v;r.asig=s.top;}
+        if(w==="base")r.bshare=s.share;else r.ashare=s.share;
         var haveBoth=(r.bsig!=null&&r.asig!=null);
         if(haveBoth){
           r.done=true;
+          if((r.bshare!=null&&r.bshare<0.6)||(r.ashare!=null&&r.ashare<0.6)){
+            r.insufficient=true;r.conflict=false;return render();
+          }
           var moved=(r.bsig!==r.asig);          // 行为是否实质改变
           if(r.disposition==="change")
             r.conflict=(r.criterion?(r.after!==true):!moved);
@@ -769,7 +797,8 @@ function sideView(){
   s.appendChild(sec);
 
   var s3=h("div",{class:"sect"},[h("div",{class:"sh"},[h("span",{},["情况集"]),
-    h("span",{class:"grow"}),h("span",{class:"tag"},[String(S.situations.length)])])]);
+    h("span",{class:"grow"}),
+    h("span",{class:"tag"},["v"+(S.scopeVer||1)+" · "+S.situations.length])])]);
   if(!S.situations.length)s3.appendChild(h("div",{class:"hint",style:"padding:0 8px"},
     ["暂无"]));
   S.situations.forEach(function(x){
@@ -1209,6 +1238,28 @@ function workView(){
     w.appendChild(slot("判定标准","check",null,body));
   }
 
+  if(t.manifest&&!S.candidate){
+    var mf=t.manifest,vs=mf.visible,wh=mf.withheld;
+    w.appendChild(slot("交给起草模型的内容","layers",
+      h("span",{class:"tag"},["范围 v"+mf.scope_version]),
+      h("div",{},[
+        h("div",{class:"mani"},[
+          h("div",{class:"col"},[h("div",{class:"ch"},["将交给"]),
+            h("ul",{},(vs.expectations||[]).map(function(x){
+              return h("li",{},[(DISP[x.disposition]||DISP.change).t+"："+x.text]);})
+              .concat([h("li",{},["探测证据 "+vs.probes+" 项"]),
+                       h("li",{},["skill 全文 "+vs.instructions+" 条"])]))]),
+          h("div",{class:"col w"},[h("div",{class:"ch"},["不会交给"]),
+            (wh.expectations||[]).length
+              ? h("ul",{},wh.expectations.map(function(x){
+                  return h("li",{},[x.text]);}))
+              : h("div",{class:"mn"},["无"])])]),
+        h("div",{style:"display:flex;gap:8px;margin-top:13px"},[
+          h("button",{class:"btn pri",disabled:S.busy?"":null,onclick:function(){
+            t.manifest=null;doDraft();}},[ic("check"),"确认并起草"]),
+          h("button",{class:"btn",onclick:function(){t.manifest=null;render();}},["返回"])])])));
+  }
+
   if(t.contrast){
     var cb=h("div",{});
     if(t.contrast.loading)cb.appendChild(h("div",{class:"mn"},[h("span",{class:"spin"})]));
@@ -1246,12 +1297,24 @@ function workView(){
           [ic("scale"),"验证影响范围"])])])));
   }
 
+  if(t.block&&t.block.done){
+    var C={responsible:["b","移除这一条后，被破坏的行为恢复了 —— 该改动块与此有关"],
+           elsewhere:["","移除这一条行为不变 —— 破坏来自别处"],
+           unsure:["u","候选自身的行为不稳定，无法判定"]}[t.block.code]||["","—"];
+    w.appendChild(slot("候选块影响","flip",
+      h("span",{class:"tag "+(C[0]==="b"?"b":"")},["候选指令 "+t.block.n]),
+      h("div",{},[h("div",{style:"font-size:13.5px"},[C[1]]),
+        h("div",{class:"mn",style:"margin-top:8px"},
+          ["以候选自身为基线，与定位原 skill 的证据不同类"])])));
+  }
+
   if(t.compare){
     var cf=t.compare.rows.filter(function(r){return r.done&&r.conflict;}).length;
+    var ins=t.compare.rows.filter(function(r){return r.insufficient;}).length;
     var rows=h("div",{});
     t.compare.rows.forEach(function(r){
       var dz=DISP[r.disposition]||DISP.change;
-      var msg=r.done?(r.conflict
+      var msg=r.insufficient?"证据不足，无法判定":r.done?(r.conflict
         ?({preserve:"该项已被破坏",change:"未达成预期",
            unresolved:"已被自行决定"}[r.disposition])
         :({preserve:"已保持",change:"已达成",unresolved:"行为未变"}[r.disposition]))
@@ -1259,22 +1322,27 @@ function workView(){
       var dr=h("div",{class:"dotrow"+(r.conflict?" broke":"")},[
         h("span",{class:"p "+(r.bsig!=null?"ok":"")}),
         h("span",{class:"seg"}),
-        h("span",{class:"p "+(r.done?(r.conflict?"no":"ok"):"")}),
-        h("span",{class:"cap"},[msg])]);
+        h("span",{class:"p "+(r.insufficient?"":r.done?(r.conflict?"no":"ok"):"")}),
+        h("span",{class:"cap"},[msg]),
+        (r.conflict&&S.candidate)?h("button",{class:"chipbtn",style:"margin-left:9px",
+          disabled:t.busy?"":null,onclick:function(){blockProbe(r);}},
+          [ic("flip","sm"),"定位改动块"]):null]);
       rows.appendChild(h("div",{class:"sitcard"+(r.conflict?" broke":"")},[
         h("div",{style:"display:flex;gap:8px;align-items:baseline"},[
           h("span",{style:"font-size:12.5px;flex:1"},[r.commitment.slice(0,52)]),
           r.sealed?h("span",{class:"sealbadge"},["独立检验"]):null,
           h("span",{class:"dchip "+dz.c},[dz.t])]),dr]));});
     w.appendChild(slot("修改影响","scale",
-      t.compare.done?h("span",{class:"tag "+(cf?"b":"g")},
-        [cf?cf+" 项未达预期":"全部符合预期"]):h("span",{class:"spin"}),
+      t.compare.done?h("span",{class:"tag "+(cf?"b":(ins?"":"g"))},
+        [cf?cf+" 项未达预期":(ins?ins+" 项证据不足":"全部符合预期")]):h("span",{class:"spin"}),
       h("div",{},[rows,t.compare.done?h("div",{style:"display:flex;gap:8px;margin-top:6px"},[
-        h("button",{class:"btn pri",disabled:cf?"":null,title:cf?"请先处理未达预期的项":"",
+        h("button",{class:"btn pri",disabled:(cf||ins)?"":null,
+          title:cf?"请先处理未达预期的项":(ins?"存在证据不足的项":""),
           onclick:function(){post("/api/publish",{}).then(function(){t.compare=null;refresh();});}},
           [ic("ship"),"发布"]),
         h("button",{class:"btn",onclick:function(){
-          decide("revise","",t).then(doDraft);}},[ic("edit"),"重新起草"]),
+          decide("revise","",t).then(function(){t.compare=null;askManifest();});}},
+          [ic("edit"),"重新起草"]),
         h("button",{class:"btn",onclick:function(){
           var n=prompt("补充执行的原因（可留空）")||"";
           decide("gather",n,t).then(function(){compare();});}},[ic("scale"),"补充执行"]),
@@ -1300,7 +1368,7 @@ function submit(){
     if(it==="run"){newTask();startTask(d.task||txt);}
     else if(it==="expect")doExpect(d.text||txt);
     else if(it==="probe"&&d.instruction)doProbe("delete",d.instruction);
-    else if(it==="edit")doDraft();
+    else if(it==="edit")askManifest();
     else if(it==="publish")compare();
     else doExpect(txt);
     render();});

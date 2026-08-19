@@ -382,6 +382,221 @@ def verdict_for(n):
     return None
 
 
+
+# ---------------------------------------------------------------- 条件 B：内部操作
+# 与条件 A 共用同一批核心函数。差别只在交互层：这里没有持久面板，结果以叙述返回。
+
+P_ROUTE = ("Route one message from someone reviewing an agent skill in a chat-only tool. "
+           "Pick exactly one capability, or none. Capabilities: "
+           "run_task(task) execute the skill on a task; "
+           "show_options() describe the candidate set of the last run and which was chosen; "
+           "check_instruction(n) test whether instruction n affects behaviour; "
+           "check_data() test whether the supplied data entered the decision; "
+           "record_expectation(text, disposition=change|preserve|unresolved) record what the owner wants; "
+           "draft() have the model revise the instructions; "
+           "compare() run before and after on every recorded expectation; "
+           "decide(action=publish|revise|gather|defer, reason); "
+           "list_instructions(); none. "
+           "Do not invent a capability. Do not act unless the message asks for it. "
+           'Output ONLY JSON: {"capability":"","args":{}}')
+
+P_NARRATE = ("You are a chat-only assistant for reviewing an agent skill. Describe the result below "
+             "in prose, in the user's language. Be accurate and complete but do not render tables, "
+             "bullet lists of more than three items, or any structure the user could click. State "
+             "uncertainty when the result is marked unstable or insufficient. Two to five sentences. "
+             'Output ONLY JSON: {"reply":""}')
+
+P_ASKPRESERVE = ("Before revising the instructions, ask the owner once, in one short question, which "
+                 "existing behaviours must keep working unchanged. Do not list candidates for them. "
+                 'Output ONLY JSON: {"reply":""}')
+
+
+def op_run(task, k=3):
+    sk = cur()
+    srcs = sk.get("sources") or {}
+    tools, args, missing = {}, {}, []
+    ordered = sorted(srcs.items(),
+                     key=lambda kv: {"data": 0, "query": 1, "write": 2}.get(kv[1].get("kind"), 1))
+    for name, src in ordered:
+        kind = src.get("kind")
+        if kind == "write":
+            continue
+        if kind == "data":
+            if src.get("rows"):
+                tools[name] = src["rows"]
+            else:
+                missing.append(name)
+            continue
+        owned = {k2: v for k2, v in tools.items()
+                 if (srcs.get(k2) or {}).get("kind") == "data"}
+        lines = "\n".join("%d. %s" % (i["n"], i["text"]) for i in sk["instructions"])
+        qa = ask(P_ARGS, "TOOL: %s%s -> %s\n\nUSER DATA:\n%s\n\nTASK: %s" % (
+            name, src.get("signature") or "", src.get("returns") or "",
+            json.dumps(owned, ensure_ascii=False)[:2500], task), 900)
+        a_ = (qa or {}).get("args") or {}
+        args[name] = a_
+        res = ask(P_CONNECT, "SERVICE: %s%s -> %s\n\nPARAMETERS: %s" % (
+            name, src.get("signature") or "", src.get("returns") or "",
+            json.dumps(a_, ensure_ascii=False)), 3000)
+        if res and "result" in res:
+            tools[name] = res["result"]
+        else:
+            missing.append(name)
+    if not tools:
+        return {"error": "没有可用的数据源", "missing": missing}
+    snap = {"id": nid("s"), "task": task, "tools": tools, "args": args, "missing": missing,
+            "summary": "", "fact_schema": None, "skill": STATE["active"], "recorded": time.time()}
+    fs = ask(P_FACTS, "TASK: %s\nTOOLS: %s" % (task, ", ".join(tools)), 900)
+    if fs and "keys" in fs:
+        snap["fact_schema"] = fs["keys"]
+    with LOCK:
+        STATE["snapshots"][snap["id"]] = snap
+    ins, _ = instructions_for({})
+    acc = []
+    with concurrent.futures.ThreadPoolExecutor(k) as ex:
+        for r in ex.map(lambda _: exec_once(ins, snap), range(k)):
+            r = r or {"error": "空返回"}
+            r.update({"id": nid("r"), "sid": snap["id"], "variant": {},
+                      "skill": STATE["active"]})
+            acc.append(r)
+    with LOCK:
+        STATE["runs"].extend(acc)
+    su = summarize(acc, None, (snap.get("fact_schema") or [])[:1])
+    ok = [r for r in acc if "error" not in r]
+    return {"snapshot": snap["id"], "summary": su,
+            "workflow": ok[0].get("steps") if ok else [],
+            "outcome": ok[0].get("outcome") if ok else "",
+            "missing": missing}
+
+
+def _last_snap():
+    xs = [x for x in STATE["snapshots"].values() if x.get("skill") == STATE["active"]]
+    return xs[-1] if xs else None
+
+
+def op_probe(kind, n=None, k=3):
+    snap = _last_snap()
+    sk = cur()
+    if not snap:
+        return {"error": "还没有执行过任务"}
+    primary = (snap.get("fact_schema") or [])[:1]
+    base = [r for r in mine(STATE["runs"]) if r.get("sid") == snap["id"]
+            and not r.get("variant") and "error" not in r]
+    bm, bs = modal(fact_signature(r, primary) for r in base)
+    out = {}
+    kinds = ("delete", "invert") if kind == "instruction" else ("perturb",)
+    for kd in kinds:
+        if kd == "delete":
+            variant = {"mask": [n]}
+        elif kd == "invert":
+            src = [i for i in sk["instructions"] if i["n"] == n]
+            inv = ask(P_INVERT, src[0]["text"], 900) if src else None
+            if not inv or "text" not in inv:
+                continue
+            variant = {"rewrite": {"n": n, "text": inv["text"]}}
+        else:
+            pt = ask(P_PERTURB, "TASK: %s\n\nTOOL RESULTS:\n%s" % (
+                snap["task"], json.dumps(snap["tools"], ensure_ascii=False)[:4000]), 1500)
+            if not pt or "tool" not in pt:
+                continue
+            variant = {"perturb": pt}
+        ins, _ = instructions_for(variant)
+        acc = []
+        with concurrent.futures.ThreadPoolExecutor(k) as ex:
+            for r in ex.map(lambda _: exec_once(ins, snap, variant.get("perturb")), range(k)):
+                acc.append(r or {"error": "空返回"})
+        m, sh = modal(fact_signature(r, primary) for r in acc)
+        out[kd] = {"changed": (bm != m) if (bm and m) else None, "share": sh}
+        with LOCK:
+            STATE["probes"].append({"id": nid("p"), "skill": STATE["active"], "kind": kd, "n": n,
+                                    "note": "", "sid": snap["id"],
+                                    "changed": out[kd]["changed"], "confidence":
+                                    "ok" if bs >= .6 else "unstable",
+                                    "base_share": round(bs, 2), "probe_share": round(sh or 0, 2),
+                                    "k": len(acc)})
+    if kind == "instruction":
+        d, i = out.get("delete"), out.get("invert")
+        if bs < .6 or not d or not i or d["changed"] is None or i["changed"] is None:
+            code = "unsure"
+        elif not d["changed"] and not i["changed"]:
+            code = "dead"
+        else:
+            code = "controls"
+        return {"instruction": n, "verdict": code, "base_share": round(bs, 2)}
+    p = out.get("perturb")
+    return {"verdict": ("unused" if p and p["changed"] is False else
+                        "used" if p and p["changed"] else "unsure")}
+
+
+def op_expect(text, disposition):
+    snap = _last_snap()
+    if not snap:
+        return {"error": "还没有执行过任务"}
+    sk = cur()
+    if sk.get("candidate"):
+        return {"error": "已存在草稿，判定标准在本轮评审中锁定"}
+    runs = [r for r in mine(STATE["runs"]) if r.get("sid") == snap["id"]
+            and "error" not in r and not r.get("variant")]
+    keys = sorted({k for r in runs for k in (r.get("facts") or {})})
+    kinds = sorted({s.get("kind") for r in runs for s in r.get("steps", []) if s.get("kind")})
+    crit = None
+    if disposition == "change":
+        c = ask(P_CRIT, "EXPECTATION: %s\n\nFACT KEYS: %s\n\nSTEP KINDS: %s\n\nSAMPLE:\n%s" % (
+            text, keys, kinds,
+            json.dumps(runs[-1], ensure_ascii=False)[:1500] if runs else "{}"), 2500)
+        cands = (c or {}).get("candidates") or []
+        for x in cands:
+            x["trial"] = [eval_criterion(x, r) for r in runs[-3:]]
+        good = [x for x in cands if x["trial"] and any(v is not None for v in x["trial"])]
+        crit = (good or cands or [None])[0]
+    st = {"id": nid("t"), "skill": STATE["active"], "sid": snap["id"], "commitment": text,
+          "criterion": crit, "disposition": disposition, "label": (crit or {}).get("label", ""),
+          "sealed": False, "created": time.time()}
+    with LOCK:
+        sk["scope_version"] = (sk.get("scope_version") or 1) + 1
+        st["scope_version"] = sk["scope_version"]
+        STATE["situations"].append(st)
+    return {"recorded": text, "disposition": disposition,
+            "criterion": (crit or {}).get("label"), "scope_version": sk["scope_version"]}
+
+
+def op_compare(k=3):
+    sits = mine(STATE["situations"])
+    if not sits:
+        return {"error": "还没有记录任何预期"}
+    rows = []
+    for x in sits:
+        snap = STATE["snapshots"].get(x.get("sid"))
+        if not snap:
+            continue
+        primary = (snap.get("fact_schema") or [])[:1]
+        res = {}
+        for w in ("base", "draft"):
+            variant = {"draft": True} if w == "draft" else {}
+            ins, _ = instructions_for(variant)
+            acc = []
+            with concurrent.futures.ThreadPoolExecutor(k) as ex:
+                for r in ex.map(lambda _: exec_once(ins, snap), range(k)):
+                    r = r or {"error": "空返回"}
+                    r["_pass"] = eval_criterion(x.get("criterion"), r)
+                    acc.append(r)
+            su = summarize(acc, x.get("criterion"), primary)
+            res[w] = su
+        b, a = res["base"], res["draft"]
+        moved = (b["top"] != a["top"])
+        if b["share"] < .6 or a["share"] < .6:
+            verdict = "insufficient"
+        elif x["disposition"] == "change":
+            verdict = "met" if (a["pass"] > a["tot"] / 2 if a["tot"] else moved) else "unmet"
+        elif x["disposition"] == "preserve":
+            broken = (b["pass"] > 0 and a["pass"] == 0) if (b["tot"] and a["tot"]) else moved
+            verdict = "broken" if broken else "kept"
+        else:
+            verdict = "decided" if moved else "untouched"
+        rows.append({"expectation": x["commitment"], "disposition": x["disposition"],
+                     "verdict": verdict})
+    return {"rows": rows}
+
 # ---------------------------------------------------------------- http
 
 class Handler(BaseHTTPRequestHandler):
@@ -427,6 +642,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0]
+        if path in ("/chat", "/chat.html"):
+            f = HERE / "chat.html"
+            return self._send(200, "text/html; charset=utf-8", f.read_bytes()) if f.exists() \
+                else self._send(404, "text/plain", b"chat.html missing")
         if path in ("/", "/index.html", "/app.html"):
             f = HERE / "app.html"
             return self._send(200, "text/html; charset=utf-8", f.read_bytes()) if f.exists() \
@@ -439,6 +658,7 @@ class Handler(BaseHTTPRequestHandler):
                            for k, v in STATE["skills"].items()],
                 "active": STATE["active"],
                 "skill": cur(), "candidate": (cur() or {}).get("candidate"),
+                "scope_version": (cur() or {}).get("scope_version") or 1,
                 "sources": [{"tool": k, "label": v.get("label") or k, "kind": v.get("kind"),
                              "signature": v.get("signature"), "returns": v.get("returns"),
                              "rows": v.get("rows") or [], "n": len(v.get("rows") or [])}
@@ -483,7 +703,7 @@ class Handler(BaseHTTPRequestHandler):
         sk = {"id": sid, "name": out.get("name") or "未命名",
               "instructions": out["instructions"], "tools": out.get("tools") or [],
               "config": out.get("config") or {}, "version": 1,
-              "versions": [], "candidate": None,
+              "versions": [], "candidate": None, "scope_version": 1,
               "sources": {t["name"]: {"label": t.get("label") or t["name"],
                                       "kind": t.get("kind") or
                                       ("write" if t.get("side_effecting") else "query"),
@@ -720,13 +940,20 @@ class Handler(BaseHTTPRequestHandler):
 
     def h_api_situation(self):
         b = self._body()
+        sk0 = cur()
+        if sk0 and sk0.get("candidate"):
+            return self._json({"error": "已存在草稿，判定标准在本轮评审中锁定"}, 409)
         st = {"id": nid("t"), "skill": STATE["active"], "sid": b.get("snapshot"),
               "commitment": b.get("commitment", ""),
               "criterion": b.get("criterion"), "disposition": b.get("disposition", "mod"),
               "label": b.get("label", ""), "sealed": bool(b.get("sealed")), "created": time.time()}
         with LOCK:
+            sk = cur()
+            if sk:
+                sk["scope_version"] = (sk.get("scope_version") or 1) + 1
+                st["scope_version"] = sk["scope_version"]
             STATE["situations"].append(st)
-        return self._json({"situation": st})
+        return self._json({"situation": st, "scope_version": (sk or {}).get("scope_version")})
 
     def h_api_probe(self):
         b = self._body()
@@ -852,6 +1079,146 @@ class Handler(BaseHTTPRequestHandler):
                      "detail": {"delete": d, "invert": i}})
         self._close()
 
+    def h_api_chat(self):
+        """条件 B：纯对话。能力与条件 A 完全相同，仅在被要求时调用，结果以叙述返回。"""
+        b = self._body()
+        sk = cur()
+        if not sk:
+            return self._json({"error": "尚未导入 skill"}, 400)
+        msg = (b.get("message") or "").strip()
+        hist = b.get("history") or []
+        STATE.setdefault("chat", [])
+
+        ctx = "SKILL: %s\nINSTRUCTIONS:\n%s\nRECORDED EXPECTATIONS: %d\nDRAFT: %s\nLAST RUN: %s" % (
+            sk["name"],
+            "\n".join("%d. %s" % (i["n"], i["text"]) for i in sk["instructions"]),
+            len(mine(STATE["situations"])), "yes" if sk.get("candidate") else "no",
+            "yes" if _last_snap() else "no")
+        convo = "\n".join("%s: %s" % (h.get("role"), h.get("text", "")[:400]) for h in hist[-8:])
+        r = ask(P_ROUTE, "%s\n\nCONVERSATION:\n%s\n\nMESSAGE: %s" % (ctx, convo, msg), 900)
+        cap = (r or {}).get("capability") or "none"
+        args = (r or {}).get("args") or {}
+
+        self._open()
+        self._chunk({"type": "act", "capability": cap})
+
+        # 起草前询问一次必须保持不变的行为；这是能力，不是界面
+        if cap == "draft" and not any(x["disposition"] == "preserve"
+                                      for x in mine(STATE["situations"])):
+            q = ask(P_ASKPRESERVE, "EXPECTATIONS SO FAR: %s" % json.dumps(
+                [x["commitment"] for x in mine(STATE["situations"])], ensure_ascii=False), 700)
+            self._chunk({"type": "text", "text": (q or {}).get("reply") or
+                         "在我修改之前，有哪些现有行为必须保持不变？"})
+            self._close()
+            return
+
+        try:
+            if cap == "run_task":
+                res = op_run(args.get("task") or msg)
+            elif cap == "show_options":
+                snap = _last_snap()
+                if not snap:
+                    res = {"error": "还没有执行过任务"}
+                else:
+                    srcs = sk.get("sources") or {}
+                    opts, chosen = None, None
+                    for tname, val in snap["tools"].items():
+                        if (srcs.get(tname) or {}).get("kind") == "query" \
+                           and isinstance(val, list) and val:
+                            opts = val
+                            break
+                    runs = [r for r in mine(STATE["runs"]) if r.get("sid") == snap["id"]
+                            and not r.get("variant") and "error" not in r]
+                    if runs:
+                        chosen = runs[-1].get("facts")
+                    res = {"options": opts, "chosen_facts": chosen} if opts \
+                        else {"error": "本次没有候选集合"}
+            elif cap == "check_instruction":
+                res = op_probe("instruction", int(args.get("n") or 0))
+            elif cap == "check_data":
+                res = op_probe("data")
+            elif cap == "record_expectation":
+                res = op_expect(args.get("text") or msg, args.get("disposition") or "change")
+            elif cap == "draft":
+                res = self._draft_internal()
+            elif cap == "compare":
+                res = op_compare()
+            elif cap == "decide":
+                res = self._decide_internal(args.get("action"), args.get("reason") or "")
+            elif cap == "list_instructions":
+                res = {"instructions": sk["instructions"]}
+            else:
+                res = {"note": "未调用任何能力"}
+        except Exception as e:  # noqa: BLE001
+            res = {"error": "%s: %s" % (type(e).__name__, str(e)[:160])}
+
+        nar = ask(P_NARRATE, "CAPABILITY: %s\n\nRESULT:\n%s\n\nUSER MESSAGE: %s" % (
+            cap, json.dumps(res, ensure_ascii=False)[:4000], msg), 1200)
+        self._chunk({"type": "text", "text": (nar or {}).get("reply") or
+                     json.dumps(res, ensure_ascii=False)[:400]})
+        self._close()
+
+    def _draft_internal(self):
+        sk = cur()
+        exps = [{"expectation": x["commitment"], "disposition": x["disposition"]}
+                for x in mine(STATE["situations"]) if not x.get("sealed")]
+        ev = [{"instruction": p["n"], "probe": p["kind"], "changed": p["changed"]}
+              for p in mine(STATE["probes"]) if p.get("n")]
+        lines = "\n".join("%d. %s" % (i["n"], i["text"]) for i in sk["instructions"])
+        out = ask(P_DRAFT, "SKILL:\n%s\n\nEXPECTATIONS:\n%s\n\nPROBE EVIDENCE:\n%s" % (
+            lines, json.dumps(exps, ensure_ascii=False), json.dumps(ev, ensure_ascii=False)), 4000)
+        if not out or "instructions" not in out:
+            return {"error": "起草失败"}
+        cand = {"id": sk["id"], "name": sk["name"], "instructions": out["instructions"],
+                "tools": sk["tools"], "config": sk["config"], "version": sk["version"] + 1,
+                "versions": [], "candidate": None, "rationale": out.get("rationale", [])}
+        cand["hash"] = shash(cand["instructions"])
+        cand["scope_version"] = sk.get("scope_version") or 1
+        with LOCK:
+            sk["candidate"] = cand
+        return {"drafted": True, "instructions": cand["instructions"]}
+
+    def _decide_internal(self, action, reason):
+        sk = cur()
+        if action == "publish":
+            if not sk.get("candidate"):
+                return {"error": "没有草稿"}
+            with LOCK:
+                cand = sk["candidate"]
+                hist = list(sk.get("versions") or [])
+                hist.append({k: sk[k] for k in ("name", "instructions", "version", "hash")})
+                cand["versions"] = hist
+                cand["candidate"] = None
+                STATE["skills"][sk["id"]] = cand
+        rec = {"id": nid("v"), "skill": STATE["active"], "action": action, "reason": reason,
+               "at": time.time(), "skill_hash": sk["hash"],
+               "scope_version": sk.get("scope_version") or 1,
+               "condition": "chat",
+               "situations": [{"commitment": x["commitment"], "disposition": x["disposition"]}
+                              for x in mine(STATE["situations"])]}
+        with LOCK:
+            STATE.setdefault("reviews", []).append(rec)
+        return {"decided": action, "reason": reason}
+
+    def h_api_manifest(self):
+        """起草前交给用户确认：哪些内容会进入起草模型，哪些不会。"""
+        sk = cur()
+        if not sk:
+            return self._json({"error": "尚未导入 skill"}, 400)
+        sits = mine(STATE["situations"])
+        probes = [p for p in mine(STATE["probes"]) if p.get("n")]
+        return self._json({
+            "scope_version": sk.get("scope_version") or 1,
+            "skill_hash": sk["hash"],
+            "visible": {
+                "expectations": [{"text": x["commitment"], "disposition": x["disposition"]}
+                                 for x in sits if not x.get("sealed")],
+                "probes": len(probes),
+                "instructions": len(sk["instructions"])},
+            "withheld": {
+                "expectations": [{"text": x["commitment"], "disposition": x["disposition"]}
+                                 for x in sits if x.get("sealed")]}})
+
     def h_api_draft(self):
         sk = cur()
         if not sk:
@@ -875,6 +1242,7 @@ class Handler(BaseHTTPRequestHandler):
                 "tools": sk["tools"], "config": sk["config"], "version": sk["version"] + 1,
                 "versions": [], "candidate": None, "rationale": out.get("rationale", [])}
         cand["hash"] = shash(cand["instructions"])
+        cand["scope_version"] = sk.get("scope_version") or 1
         with LOCK:
             sk["candidate"] = cand
         return self._json({"candidate": cand})
@@ -897,6 +1265,7 @@ class Handler(BaseHTTPRequestHandler):
                                 for i in ins if (i.get("text") or "").strip()]
         cand["hash"] = shash(cand["instructions"])
         cand["author"] = "owner"
+        cand["scope_version"] = sk.get("scope_version") or 1
         with LOCK:
             sk["candidate"] = cand
         return self._json({"candidate": cand})
@@ -910,6 +1279,7 @@ class Handler(BaseHTTPRequestHandler):
         rec = {"id": nid("v"), "skill": STATE["active"], "action": b.get("action"),
                "reason": (b.get("reason") or "").strip(),
                "at": time.time(), "skill_hash": sk["hash"],
+               "scope_version": sk.get("scope_version") or 1,
                "candidate_hash": (sk.get("candidate") or {}).get("hash"),
                "situations": [{"commitment": x["commitment"], "disposition": x["disposition"],
                                "sealed": bool(x.get("sealed"))}
@@ -918,6 +1288,43 @@ class Handler(BaseHTTPRequestHandler):
         with LOCK:
             STATE.setdefault("reviews", []).append(rec)
         return self._json({"review": rec})
+
+    def h_api_blockprobe(self):
+        """对候选的某条指令做临时移除，估计该改动块的影响范围。
+        基线是候选本身，与对原 skill 的定位证据分属不同类型。"""
+        b = self._body()
+        snap = STATE["snapshots"].get(b.get("snapshot"))
+        sk = cur()
+        if not snap or not sk or not sk.get("candidate"):
+            return self._json({"error": "需要先有草稿"}, 400)
+        n = b.get("n")
+        k = max(1, min(5, int(b.get("k", 3))))
+        primary = (snap.get("fact_schema") or [])[:1]
+
+        base = [r for r in mine(STATE["runs"])
+                if r.get("sid") == snap["id"] and (r.get("variant") or {}).get("draft")
+                and not (r.get("variant") or {}).get("mask") and "error" not in r]
+        base_mode, base_share = modal(fact_signature(r, primary) for r in base)
+
+        variant = {"draft": True, "mask": [n]}
+        instructions, _ = instructions_for(variant)
+        self._open()
+        self._chunk({"type": "start", "n": n, "baseline": "candidate"})
+        acc = self._stream_runs(instructions, snap, variant, k, None, quiet=True)
+        mode, share = modal(fact_signature(r, primary) for r in acc)
+        if base_mode is None or mode is None or base_share < 0.6:
+            code, changed = "unsure", None
+        else:
+            changed = (base_mode != mode)
+            code = "responsible" if changed else "elsewhere"
+        rec = {"id": nid("p"), "skill": STATE["active"], "kind": "block", "n": n,
+               "note": "移除候选中的指令 %d" % n, "sid": snap["id"],
+               "changed": changed, "confidence": "ok" if code != "unsure" else "unstable",
+               "base_share": round(base_share, 2), "probe_share": round(share, 2), "k": len(acc)}
+        with LOCK:
+            STATE["probes"].append(rec)
+        self._chunk({"type": "done", "probe": rec, "code": code})
+        self._close()
 
     def h_api_publish(self):
         sk = cur()
@@ -934,6 +1341,7 @@ class Handler(BaseHTTPRequestHandler):
                 {"id": nid("v"), "skill": sk["id"], "action": "publish",
                  "reason": "", "at": time.time(), "skill_hash": sk["hash"],
                  "candidate_hash": cand["hash"], "version": cand["version"],
+                 "scope_version": sk.get("scope_version") or 1,
                  "situations": [{"commitment": x["commitment"], "disposition": x["disposition"],
                                  "sealed": bool(x.get("sealed"))}
                                 for x in mine(STATE["situations"])]})
