@@ -1,0 +1,143 @@
+\section{Technical Evaluation}
+\label{sec:technical-evaluation}
+
+Behavioral patch review depends on execution evidence that is sufficiently
+faithful and stable for a workflow owner to interpret. We therefore evaluated
+the evidence pipeline separately from the user study. The evaluation asks
+whether the prototype reconstructs observable behavior correctly, whether its
+matched comparisons remain stable under the frozen study configuration, and
+whether targeted source interventions provide useful discrimination without
+being mistaken for proof of causality.
+
+\subsection{Evaluation Questions and Corpus}
+
+We organized the evaluation around three technical questions:
+
+\begin{description}[leftmargin=0pt,labelindent=0pt,style=nextline]
+    \item[\textbf{TQ1: Evidence fidelity.}] Do the trace and fact evaluators
+    accurately reconstruct the decisions, tool actions, and outcomes relevant
+    to each behavioral commitment?
+    \item[\textbf{TQ2: Execution stability.}] Do repeated executions of the
+    same skill and case support a stable matched comparison under the study
+    configuration?
+    \item[\textbf{TQ3: Intervention discriminability.}] Do bounded
+    interventions expose sensitivity to repair-relevant source regions while
+    preserving a visible distinction between source-location evidence and
+    whole-candidate validation?
+\end{description}
+
+The evaluation corpus contains the complete travel-recovery and
+expense-review scenario packs used in the controlled study. Each pack includes
+the faulty source skill, an independently authored reference repair, the
+product-facing cases, post-decision cases, typed tool schemas, and frozen world
+states. Reference behaviors and case-level criteria were specified before the
+candidate-generation path was sampled. We exercised the faulty skill,
+reference repair, source interventions, and end-to-end candidate path across
+all cases using the same model and execution service later used in the study.
+Appendix~\ref{app:system-details} reports the exact artifacts, budgets, and
+configuration.
+
+\subsection{Measures and Analysis}
+
+For evidence fidelity, two researchers independently inspected a stratified
+sample of raw tool traces and terminal world states and annotated the
+commitment-relevant facts and event ordering. We compared these annotations
+with the system's deterministic evaluator outputs, resolving disagreements
+without access to condition labels or candidate provenance. We report exact
+agreement, class-specific errors, and inter-rater agreement before resolution.
+
+For execution stability, we measured valid-run rate, modal behavior share, and
+agreement of commitment-relevant facts across repetitions of each
+skill--case pair. We examined the faulty and reference artifacts separately so
+that a stable evaluator could not conceal unstable agent behavior. For matched
+comparisons, we additionally verified that original and candidate executions
+shared the same task context, tool snapshot, configuration, and side-effect
+policy.
+
+For intervention discriminability, we compared the selected source
+interventions with interventions on instructions not expected to govern the
+target behavior. We measured whether each intervention changed the incident's
+commitment-relevant facts, whether it also altered preservation cases, and how
+often the selected source region ranked above non-target regions by behavioral
+sensitivity. This analysis evaluates the usefulness of the cue under the
+scenario corpus; it does not estimate unique causal responsibility among
+interacting natural-language instructions.
+
+Finally, we sampled the complete candidate-generation and execution path to
+test whether the evidence shown during a realistic repair remained
+reconstructable end to end. We report incident success, preservation and
+holdout behavior, execution failures, and operational latency. These candidate
+samples assess the readiness of the study apparatus rather than the human
+benefit of the workspace.
+
+\subsection{Results}
+
+\paragraph{TQ1: Evaluators faithfully reconstructed observable behavior.}
+Across \DataNeeded{NUMBER OF MANUALLY AUDITED EXECUTIONS} audited executions,
+the deterministic evaluators agreed with the resolved human annotations on
+\DataNeeded{OVERALL EXACT AGREEMENT, WITH CONFIDENCE INTERVAL}. Agreement was
+\DataNeeded{FACT-CRITERION AGREEMENT} for fact criteria and
+\DataNeeded{TRACE-ORDER AGREEMENT} for trace-order criteria. Independent
+annotators achieved \DataNeeded{INTERRATER AGREEMENT AND MEASURE} before
+resolution. The remaining \DataNeeded{NUMBER} discrepancies involved
+\DataNeeded{CHARACTERIZE EXTRACTION OR TRACE-ORDER EDGE CASES}; none
+\DataNeeded{CONFIRM WHETHER ANY DISCREPANCY CHANGED A CASE-LEVEL REVIEW STATE}.
+We corrected \DataNeeded{REPORT ANY EVALUATOR OR FIXTURE CORRECTIONS MADE
+BEFORE FREEZING THE STUDY BUILD} and repeated the affected calibration before
+participant data collection.
+
+\paragraph{TQ2: Matched executions were stable enough to expose genuine
+uncertainty.}
+The frozen corpus produced valid executions in
+\DataNeeded{VALID-RUN RATE AND NUMERATOR/DENOMINATOR}. Commitment-relevant
+behavior was stable in \DataNeeded{NUMBER OR PROPORTION OF SKILL--CASE PAIRS
+MEETING THE PREREGISTERED STABILITY THRESHOLD}, with a median modal share of
+\DataNeeded{MEDIAN AND INTERQUARTILE RANGE}. The faulty skills reliably
+reproduced the motivating breakdowns, while the reference repairs achieved
+their incident targets and preservation criteria in
+\DataNeeded{REFERENCE SUCCESS RATES}. The remaining unstable pairs concerned
+\DataNeeded{CHARACTERIZE UNSTABLE CASES}; the interface surfaced these as
+insufficient evidence rather than collapsing them into a deterministic
+outcome. Configuration audits found \DataNeeded{NUMBER} unmatched original--
+candidate comparisons after freezing \DataNeeded{EXPECTED TO BE ZERO; REPORT
+ANY EXCEPTIONS AND THEIR HANDLING}.
+
+\paragraph{TQ3: Source interventions provided discriminating but bounded
+location cues.}
+The source regions selected for the two scenario packs changed the
+incident-relevant behavior in \DataNeeded{SELECTED-INTERVENTION HIT RATE},
+compared with \DataNeeded{NON-TARGET INTERVENTION RATE} for non-target source
+regions. They ranked within the top \DataNeeded{RANK OR PERCENTILE} regions by
+behavioral sensitivity in \DataNeeded{PROPORTION OF CALIBRATION SAMPLES}.
+Their effects were not perfectly local: \DataNeeded{NUMBER OR PROPORTION} also
+changed at least one neighboring case, illustrating why the system treats the
+intervention as a source-location cue and subsequently executes the complete
+candidate across the behavioral scope. No source intervention result was used
+as confirmatory evidence for newly generated text.
+
+\paragraph{The complete candidate path supported the planned study tasks.}
+Across \DataNeeded{NUMBER OF END-TO-END CANDIDATE SAMPLES}, generated
+candidates repaired the motivating incident in
+\DataNeeded{INCIDENT SUCCESS RATE}, preserved visible commitments in
+\DataNeeded{VISIBLE PRESERVATION RATE}, and preserved generator-withheld
+behavior in \DataNeeded{WITHHELD PRESERVATION RATE}. The candidate path also
+produced \DataNeeded{NUMBER AND TYPES OF DELIBERATE OR NATURALLY OCCURRING
+MISMATCHES} cases in which review should lead to revision, further evidence, or
+deferral rather than release. Median end-to-end latency was
+\DataNeeded{LATENCY WITH DISTRIBUTION}, and execution or service failures
+occurred in \DataNeeded{FAILURE RATE}. These results established that both
+study conditions could expose the same substantive repair evidence within the
+planned task duration.
+
+\subsection{Summary and Evidentiary Boundaries}
+
+The technical evaluation supports the use of deterministic trace and fact
+evidence for the two controlled domains and shows that the prototype can
+distinguish stable behavior from insufficient evidence. It also supports the
+narrower role assigned to source interventions: they can direct attention to
+behaviorally relevant text, but their effects may extend across cases and do
+not identify a unique causal instruction. The evaluation does not establish
+reliability for arbitrary skills, tools, models, or deployment environments.
+The controlled user study therefore tests whether people benefit from this
+evidence within the evaluated scope, not whether \systemname{} certifies a
+revision for unrestricted use.

@@ -1,0 +1,1051 @@
+% \appendix is invoked in main.tex before all appendix inputs.
+
+\section{Participant Recruitment and Sample Construction}
+\label{app:participants}
+
+\subsection{Sampling rationale}
+
+The study is designed to examine workflow ownership without assuming skill
+engineering expertise. We therefore recruit for high \emph{workflow
+accountability} and variation in \emph{artifact familiarity}. Workflow
+accountability means that the participant defines task goals, judges the
+acceptability of agent behavior, depends on the workflow's output, or bears
+responsibility for its consequences. Artifact familiarity concerns the extent
+to which the participant can inspect, author, or modify reusable instructions.
+We target 12--16 completed sessions, with a planned stopping point of 14 unless
+attrition or an imbalanced sample requires up to two additional participants.
+This target prioritizes information-rich variation. Statistical
+representativeness lies outside the study's purpose.
+
+We seek variation along the following dimensions:
+
+\begin{table}[h]
+\centering
+\caption{Maximum-variation sampling dimensions. These are sampling targets,
+not experimental conditions.}
+\label{tab:sampling-dimensions}
+\begin{tabularx}{\linewidth}{P{0.25\linewidth}YY}
+\toprule
+\textbf{Dimension} & \textbf{Lower end} & \textbf{Higher end} \\
+\midrule
+Artifact familiarity & Rarely inspects or edits reusable instructions; may ask a teammate or AI to make changes & Regularly authors, inherits, reviews, or versions system prompts, routines, or skills \\
+Workflow consequence & Primarily time, quality, or inconvenience costs & Material financial, coordination, reputational, or operational consequences, excluding regulated high-stakes decisions \\
+Workflow structure & Primarily generates or transforms information & Uses multiple tools, priorities, confirmations, or conditional actions \\
+Ownership arrangement & Individual workflow & Shared, inherited, or organizational workflow \\
+Domain & Research, writing, analysis, or personal productivity & Product, operations, software, customer support, or other organizational work \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Inclusion and exclusion criteria}
+
+Participants must satisfy all inclusion criteria:
+
+\begin{enumerate}[leftmargin=*]
+    \item They have used an LLM assistant or agent for the same recurring family
+    of tasks at least five times in the previous three months.
+    \item The workflow is shaped by a persistent instruction or configuration
+    artifact, such as custom instructions, a saved system prompt, a reusable
+    template, a routine, or an agent skill. The participant need not have
+    authored it, but must be able to describe its role and provide at least a
+    redacted excerpt, reconstruction, or screen-shared view.
+    \item They can identify an execution within the previous six months that
+    they considered unacceptable, surprising, or unsafe to reuse without
+    review.
+    \item They had responsibility for judging the workflow's goals or outcomes,
+    even if another person or AI implemented the configuration.
+    \item They can provide a redacted failure artifact and either a typical
+    successful execution or a description of expected behavior.
+\end{enumerate}
+
+We exclude workflows whose discussion would require disclosure of protected
+health information, active legal representation, classified material,
+credentials, or other information that cannot be safely redacted. We also
+exclude one-off prompting, workflows without any persistent configuration, and
+participants who cannot describe a concrete breakdown. The study examines
+repair reasoning, not the correctness of decisions in regulated domains.
+
+\subsection{Recruitment screener}
+
+The screener should be administered before scheduling. Bracketed response
+options are suggestions and may be adapted to the recruitment platform.
+
+\begin{enumerate}[leftmargin=*]
+    \item Describe one task for which you repeatedly use the same AI assistant,
+    agent, custom GPT, saved prompt, template, routine, or skill.
+    \item Approximately how many times have you used this workflow in the last
+    three months? [1--2; 3--4; 5--10; 11--25; more than 25]
+    \item Who decides whether the workflow's output or action is acceptable?
+    [Primarily me; shared; primarily another person]
+    \item Who can inspect or change the reusable instructions? [Me; a teammate;
+    AI on my behalf; platform owner; unknown]
+    \item Have you encountered a concrete execution that caused you to modify,
+    consider modifying, reduce reliance on, or stop using this workflow?
+    [Yes/No; brief description]
+    \item What could go wrong if the workflow behaves incorrectly? [Time loss;
+    poor quality; financial cost; coordination cost; reputational cost; other]
+    \item Can you provide a redacted screenshot, output, trace, instruction
+    excerpt, version diff, or reconstruction related to that incident? [Yes/No]
+    \item Does the material contain information that cannot be safely redacted
+    or discussed in a research session? [Yes/No]
+\end{enumerate}
+
+\subsection{Participant table template}
+
+Populate Table~\ref{tab:participant-template} only after the sample is final.
+Use broad role and domain labels to avoid re-identification.
+
+\begin{table*}[t]
+\centering
+\caption{Participant characteristics. Replace all placeholders with verified,
+de-identified information.}
+\label{tab:participant-template}
+\begin{tabularx}{\textwidth}{P{0.045\textwidth}P{0.13\textwidth}P{0.22\textwidth}P{0.12\textwidth}P{0.14\textwidth}Y}
+\toprule
+\textbf{ID} & \textbf{Role / domain} & \textbf{Recurring workflow} & \textbf{Artifact access} & \textbf{Artifact familiarity} & \textbf{Primary consequence} \\
+\midrule
+P1 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P2 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P3 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P4 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P5 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P6 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P7 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P8 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P9 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P10 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P11 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P12 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P13 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+P14 & \DataNeeded{ROLE} & \DataNeeded{WORKFLOW} & \DataNeeded{ACCESS} & \DataNeeded{LEVEL} & \DataNeeded{CONSEQUENCE} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\section{Pre-Study Artifact Collection and Data Handling}
+\label{app:artifacts}
+
+\subsection{Artifact request}
+
+Two to three days before the session, participants receive the following
+request:
+
+\begin{quote}
+Please choose one recurring task for which you use an AI assistant or agent with
+a persistent configuration, such as custom instructions, a saved prompt,
+template, routine, or skill. Provide, if available: (1) one execution that you
+considered unacceptable or surprising; (2) one typical or successful execution
+from the same workflow; (3) the relevant reusable instructions or a redacted
+excerpt; and (4) any note, version history, or change you considered after the
+incident. You may redact names, organizations, values, and proprietary details,
+reconstruct the case with equivalent placeholders, or show the materials only
+through screen sharing during the session.
+\end{quote}
+
+Participants also answer a brief artifact inventory:
+
+\begin{enumerate}[leftmargin=*]
+    \item What recurring task was the workflow intended to support?
+    \item Who created and who currently maintains the reusable configuration?
+    \item Which parts of the configuration can you inspect or edit?
+    \item What happened in the selected breakdown?
+    \item What did you do afterward: rerun, edit, ask someone else to edit,
+    manually take over, rollback, reduce automation, or stop using the workflow?
+    \item What behavior did you hope would remain unchanged?
+    \item What evidence, if any, convinced you that the incident was resolved?
+\end{enumerate}
+
+\subsection{Privacy and data minimization}
+
+Participants are instructed not to submit credentials, private keys, protected
+health information, privileged legal material, or data they are not authorized
+to share. The research team stores only the minimum artifact segments needed to
+understand the incident. Screen-shared materials not approved for retention are
+not captured in screenshots; the interviewer records a de-identified structural
+summary. Names, company identifiers, exact monetary values, and unique workflow
+details are generalized during transcription. The consent form separately
+asks permission to quote de-identified speech and to reproduce redacted artifact
+fragments. Every quotation used in the paper must be checked against the audio
+or transcript and approved under the study's consent procedure.
+
+\section{Complete Session Protocol}
+\label{app:procedure}
+
+\subsection{Pilot and freeze procedure}
+
+Conduct two pilot sessions that are excluded from the reported sample. The
+pilots test whether participants can understand the standardized scenario,
+whether the open evidence-request phase yields actionable requests, whether the
+common evidence fits within the allotted time, and whether the decision options
+are interpreted distinctly. After the pilots, revise ambiguous wording and
+then freeze: (1) the moderator script; (2) the standardized skill and incident;
+(3) the evidence bank; (4) the common evidence set; (5) response-card wording;
+and (6) the coding event schema. Any post-freeze change must be logged with its
+reason, date, affected participants, and analytic consequence.
+
+\subsection{Session overview}
+
+\begin{table}[h]
+\centering
+\caption{Session structure and primary purpose.}
+\label{tab:session-overview}
+\begin{tabularx}{\linewidth}{P{0.13\linewidth}P{0.17\linewidth}Y P{0.18\linewidth}}
+\toprule
+\textbf{Time} & \textbf{Activity} & \textbf{Purpose} & \textbf{Primary data} \\
+\midrule
+0--5 min & Consent and orientation & Establish scope; emphasize that the task has no single expected diagnosis & Consent; baseline description \\
+5--30 min & Real breakdown reconstruction & Examine current practice without imposing the triadic model & Timeline; artifact references; explanations; actions \\
+30--65 min & Open-ended WoZ repair probe & Observe evidence seeking, scope revision, implementation choice, and action & Requests; predictions; proposals; final decision \\
+65--80 min & Reflection and delegation interview & Compare probe and real practice; clarify desired authority & Interview; delegation sort; rationale \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The nominal duration is 80 minutes. Small deviations are permitted only to let a participant finish a thought; the moderator must not selectively extend evidence seeking or decision time.
+The facilitator should not reward a particular diagnosis, encourage a skill
+edit, or imply that more evidence is always preferable.
+
+\subsection{Opening script: 0--5 minutes}
+
+The moderator reads:
+
+\begin{quote}
+We are studying how people understand and respond when a recurring AI workflow
+does something they consider unacceptable. We are evaluating the workflow and
+our study materials, not your skill. There may be more than one reasonable way
+to interpret an incident, and you do not need to identify one correct cause.
+During the second activity, you may request evidence from a prepared set. The
+assistant will not have unlimited capabilities, and an unavailable request is
+still useful data about what you wanted to know.
+\end{quote}
+
+The moderator confirms consent, recording preferences, artifact-retention
+permissions, and the participant's preferred terminology for the reusable
+configuration.
+
+\subsection{Part 1: Artifact-grounded breakdown reconstruction, 5--30 minutes}
+
+The moderator opens a neutral event timeline with six headings: \emph{Goal},
+\emph{What happened}, \emph{What I observed}, \emph{What I inferred},
+\emph{What I considered changing}, and \emph{What remained uncertain}. The
+headings are presented as note-taking aids, not as a model of the system.
+
+\paragraph{A. Establish the recurring workflow.}
+\begin{enumerate}[leftmargin=*]
+    \item What recurring work was the AI meant to perform?
+    \item What makes two uses instances of the same recurring workflow?
+    \item What outcomes, intermediate decisions, tool actions, or confirmation
+    points matter to you?
+    \item Who is accountable when the workflow behaves incorrectly?
+\end{enumerate}
+
+\paragraph{B. Reconstruct the incident chronologically.}
+\begin{enumerate}[leftmargin=*]
+    \item What did you ask the system to do, and what context was available?
+    \item What did you directly observe in the output, trace, or tool results?
+    \item What do you believe happened but did not directly observe?
+    \item At what point did the workflow depart from your expectation?
+    \item What consequence made the outcome unacceptable?
+\end{enumerate}
+
+The moderator asks the participant to mark each item as \emph{observed},
+\emph{inferred}, or \emph{uncertain}. The moderator does not correct the
+participant's account or introduce instruction-level terminology unless the
+participant does so.
+
+\paragraph{C. Elicit possible objects of repair.}
+\begin{enumerate}[leftmargin=*]
+    \item At the time, what did you think might need to change?
+    \item What alternative changes or non-changes did you consider?
+    \item What evidence supported each possibility?
+    \item Were there explanations you could not distinguish?
+    \item Was there any reason not to edit the reusable instructions?
+\end{enumerate}
+Only after the participant has answered these open prompts may the moderator use
+a neutral rescue prompt: ``Did you consider changing anything about the desired
+behavior, the persistent configuration, the current input, a tool, the amount
+of automation, or something else?'' The transcript and coding record whether
+an object of repair was raised spontaneously or after this prompt.
+
+\paragraph{D. Reconstruct the actual response and release judgment.}
+\begin{enumerate}[leftmargin=*]
+    \item What did you or someone else actually change?
+    \item Did you test only the motivating case or other cases as well?
+    \item What behavior did you want to remain dependable?
+    \item What made you willing to keep using, deploy, roll back, or abandon the
+    revised workflow?
+    \item Looking back, what information was missing?
+\end{enumerate}
+
+At the end of Part 1, the moderator writes a neutral one-sentence summary and
+asks the participant to correct it. The summary must not identify a root cause
+unless the participant has done so.
+
+\subsection{Part 2: Open-ended Wizard-of-Oz repair probe, 30--65 minutes}
+
+\subsubsection{Stage A: Incident only, 30--36 minutes}
+
+Show only the materials in Appendix~\ref{app:scenario-incident}: the travel
+request, observable tool calls, candidate flights, agent decision, and missed
+presentation. Do not show the skill or an explicit list of requirements.
+
+Ask:
+
+\begin{enumerate}[leftmargin=*]
+    \item What, if anything, is unacceptable about this execution?
+    \item What should have happened in this case?
+    \item What might you change first, if anything?
+    \item What other future behavior could that change affect?
+    \item How confident are you in your current explanation and action? Record
+    each from 0 (not at all confident) to 100 (completely confident).
+\end{enumerate}
+
+Do not use the labels \emph{change}, \emph{preserve}, or \emph{unresolved} at
+this stage.
+
+\subsubsection{Stage B: Reveal the reusable artifact, 36--42 minutes}
+
+Reveal the proposed six-instruction skill in Appendix~\ref{app:scenario-skill}
+and the available tools. Give the participant time to read, then ask:
+
+\begin{enumerate}[leftmargin=*]
+    \item What does the skill change about your explanation, if anything?
+    \item Which relationships does the skill state explicitly, and which are
+    your inferences?
+    \item Does the skill fully express the policy you think the workflow should
+    follow?
+    \item Would you change your proposed action?
+    \item Update explanation and action confidence from 0--100.
+\end{enumerate}
+
+The participant then predicts the workflow's decision in the three short
+contexts in Appendix~\ref{app:prediction-items} without seeing their outputs.
+These predictions elicit the participant's current mental model; they are not
+used to make inferential performance claims in the formative study.
+
+\subsubsection{Stage C: Free evidence request, 42--52 minutes}
+
+The moderator says:
+
+\begin{quote}
+You may now ask for any evidence that would help you decide what, if anything,
+should change. You can ask to see another type of case, rerun a case, inspect a
+tool result, try a what-if change, compare two revisions, or request something
+else. Tell us what you hope each request will help you decide.
+\end{quote}
+
+For each request, the facilitator records:
+
+\begin{itemize}[leftmargin=*]
+    \item the participant's wording;
+    \item the uncertainty or decision the request is intended to address;
+    \item the matched evidence-bank card or an ``unavailable'' response;
+    \item the participant's interpretation after seeing the evidence;
+    \item any change in proposed object of repair, scope, confidence, or action.
+\end{itemize}
+
+The facilitator follows the lookup protocol in Appendix~\ref{app:wizard}. No
+new model output, explanation, or diagnosis may be generated during the
+session.
+
+\subsubsection{Stage D: Common evidence, 52--59 minutes}
+
+Present four evidence cards to every participant, using the counterbalanced
+orders in Table~\ref{tab:common-orders}:
+
+\begin{enumerate}[leftmargin=*]
+    \item a routine preservation context;
+    \item a difficult policy-boundary context;
+    \item repeated executions of the motivating case;
+    \item a context in which calendar/tool state is incomplete.
+\end{enumerate}
+
+If a participant already requested one of these cards, mark it as previously
+seen and spend no additional time on it. After each new card, ask:
+
+\begin{enumerate}[leftmargin=*]
+    \item What, if anything, does this change about your explanation?
+    \item Does it change what you would modify or where the modification should
+    apply?
+    \item Does it reveal behavior that should remain stable?
+    \item Does it reveal a trade-off you are not ready to settle?
+\end{enumerate}
+
+Only after these open questions does the moderator introduce a worksheet with
+three columns: \emph{Should behave differently}, \emph{Should remain stable},
+and \emph{Not ready to decide}. The participant may leave any column empty.
+
+\subsubsection{Stage E: Implementation and action choice, 59--65 minutes}
+
+Ask the participant to select one implementation mode:
+
+\begin{enumerate}[leftmargin=*]
+    \item write a skill revision manually;
+    \item ask AI to draft a revision and edit or approve it;
+    \item describe the desired behavioral policy and let AI implement the text;
+    \item defer implementation pending more evidence;
+    \item retain the current Skill.
+\end{enumerate}
+
+If the participant requests an AI draft, provide a precomputed candidate that
+corresponds to their selected policy class, not a live personalized generation.
+The participant may annotate or reject it. Then show the available old-versus-
+new evidence cards and ask for one final action:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Release}: reuse the revision under the reviewed conditions;
+    \item \textbf{Revise}: change the candidate before reuse;
+    \item \textbf{Gather more evidence}: withhold a decision; or
+    \item \textbf{Defer}: retain the current Skill.
+\end{itemize}
+
+Record the participant's rationale and the evidence they consider decisive or
+missing. The moderator must not imply that release is the desired endpoint.
+
+\subsection{Part 3: Reflection and delegation interview, 65--80 minutes}
+
+\paragraph{Compare real and standardized incidents.}
+\begin{enumerate}[leftmargin=*]
+    \item What felt similar or different between this scenario and your own
+    workflow?
+    \item Did the probe cause you to reconsider how you handled your real
+    incident?
+    \item Which evidence was useful, distracting, or missing?
+\end{enumerate}
+
+\paragraph{Representation and legibility.}
+\begin{enumerate}[leftmargin=*]
+    \item Would you rather begin from behavior, the skill text, or an execution
+    trace? Why?
+    \item What should be shown by default, and what should require drill-down?
+    \item Do you need a responsible-instruction explanation, or is it enough to
+    know how a candidate revision changes behavior?
+    \item How should unstable or inconclusive evidence be represented?
+\end{enumerate}
+
+\paragraph{Division of labor.}
+The participant sorts the responsibilities in
+Table~\ref{tab:delegation-cards} into \emph{User}, \emph{AI}, or \emph{Shared},
+then discusses any responsibility whose allocation depends on risk or artifact
+familiarity.
+
+\paragraph{Release and maintenance.}
+\begin{enumerate}[leftmargin=*]
+    \item What does ``remaining in control'' mean in this workflow?
+    \item What evidence would be required before release in your own domain?
+    \item What should be saved for the next maintainer or future revision?
+    \item When should the system recommend no skill edit?
+\end{enumerate}
+
+\subsection{Debrief}
+
+Explain that the standardized scenario was designed to admit multiple plausible
+repairs and that the study did not contain a hidden correct diagnosis. Clarify
+which outputs were precomputed, remind the participant not to adopt the study's
+candidate patches in a real workflow without independent validation, and
+confirm whether submitted materials may be retained.
+
+\section{Standardized Travel-Recovery Scenario}
+\label{app:scenario}
+
+\DraftNote{The materials in this appendix are a proposed study instrument based on the paper's motivating travel-recovery scenario. They are not copied from a validated dataset. Pilot, audit, and freeze all wording and executions before data collection.}
+
+\subsection{Motivating incident}
+\label{app:scenario-incident}
+
+A researcher's original flight is canceled at 14:00 on the day before a
+conference presentation. The agent has access to the traveler's itinerary,
+calendar, airline search, fare details, and rebooking tool. The observable
+calendar result contains a paper presentation at 09:00 the following morning.
+The search tool returns the two feasible options in
+Table~\ref{tab:incident-options}.
+
+\begin{table*}[t]
+\centering
+\caption{Candidate flights in the motivating incident.}
+\label{tab:incident-options}
+\begin{tabularx}{\textwidth}{P{0.08\textwidth}P{0.17\textwidth}P{0.16\textwidth}P{0.09\textwidth}P{0.11\textwidth}Y}
+\toprule
+\textbf{Option} & \textbf{Arrival} & \textbf{Airline} & \textbf{Fare} & \textbf{Connections} & \textbf{Consequence} \\
+\midrule
+A & 13:30 next day & Original airline & \$80 & 0 & Misses the 09:00 presentation \\
+B & 20:00 same day & Different airline & \$420 & 1 & Arrives the evening before the presentation \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+The agent selects Option A and explains that it is cheaper, uses the original
+airline, and avoids a connection. It does not ask for confirmation. The study
+shows the participant only observable inputs, tool outputs, and the final
+decision; it does not reveal hidden chain-of-thought or claim that one internal
+reason caused the decision.
+
+\subsection{Proposed reusable skill}
+\label{app:scenario-skill}
+
+The skill is intentionally plausible but incomplete: it asks the agent to
+retrieve relevant information and balance several preferences without fully
+specifying how time-critical commitments override them.
+
+\begin{enumerate}[leftmargin=*]
+    \item Identify all disrupted flight segments and retrieve feasible
+    alternatives for the traveler.
+    \item Check the traveler's calendar for commitments within 24 hours of the
+    original arrival time and include them in the comparison.
+    \item Prefer the original airline when a feasible option is available.
+    \item Prefer lower total fare and fewer connections among feasible options.
+    \item Ask for confirmation before selecting an option priced above \$500 or
+    before a non-refundable purchase.
+    \item When no option satisfies all preferences, choose the option that
+    minimizes overall travel disruption and explain the trade-off before
+    rebooking.
+\end{enumerate}
+
+The six instructions create several plausible objects of repair without making
+one a study-defined ground truth: the calendar information may be insufficiently
+prioritized; airline or cost preferences may be overly broad; ``overall
+travel disruption'' may be underspecified; confirmation may be too narrowly
+triggered; or a tool/context failure may make a textual edit inappropriate.
+
+\subsection{Prediction items after skill reveal}
+\label{app:prediction-items}
+
+Before any additional evidence, ask participants to predict the original
+skill's likely choice and provide 0--100 confidence for each context:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Routine leisure trip.} No calendar commitment depends on
+    early arrival. A \$120 same-airline nonstop arrives at 15:00 next day; a
+    \$840 different-airline one-stop arrives at 21:00 the same day.
+    \item \textbf{Moderate commitment, aligned preferences.} A \$260
+    same-airline nonstop arrives at 20:00 before a 10:00 meeting; a \$90
+    same-airline flight arrives at 11:30 after the meeting begins.
+    \item \textbf{High-cost boundary.} A \$1,180 different-airline flight
+    arrives before a fixed 08:00 client presentation; a \$95 same-airline
+    flight arrives six hours after it begins.
+\end{enumerate}
+
+The formative study uses these predictions to elicit participants' current
+interpretation, not to estimate population-level prediction accuracy.
+
+\subsection{Common evidence cards}
+\label{app:common-evidence}
+
+\paragraph{E1: Routine preservation context.}
+Use the routine leisure trip above. The original skill's precomputed executions
+should predominantly favor the lower-cost same-airline option. The evidence
+card should expose raw decisions and explanations across repetitions, without
+labeling this behavior as correct.
+
+\paragraph{E2: Policy-boundary context.}
+Use the high-cost boundary above. Precomputed outputs should illustrate the
+trade-off between a fixed commitment and a large fare difference. It is
+acceptable for outputs to vary, provided that the card accurately reports the
+variation and does not manufacture a clean effect.
+
+\paragraph{E3: Repeated motivating executions.}
+Show five executions of the motivating incident under identical visible inputs.
+Report each option selected, whether confirmation was requested, and the
+observable justification. Do not average away disagreement.
+
+\paragraph{E4: Incomplete calendar input.}
+Show a separate execution in which the calendar tool returns an incomplete
+result because the event is stored in a secondary calendar that is not queried.
+This card tests how the Skill behaves when an instruction receives incomplete
+tool-derived input.
+
+\subsection{Candidate implementation classes}
+\label{app:candidate-patches}
+
+Candidate text is shown only when requested in Stage E. The study should include
+at least these classes. Each is labeled as a candidate, with no recommended
+status:
+
+\paragraph{P1: Broad arrival-priority patch.}
+``Always select the option with the earliest arrival, even when it costs more or
+uses a different airline.'' This patch fixes the motivating case but is
+intentionally likely to overreach in routine travel.
+
+\paragraph{P2: Scoped commitment patch.}
+``When the calendar contains a fixed commitment within 16 hours of arrival,
+select an option scheduled to arrive at least three hours before that commitment.
+Otherwise, continue to balance fare, airline, and connections. Ask for
+confirmation whenever satisfying the commitment requires a fare more than
+\$500 above the lowest feasible option.'' This patch encodes one possible
+boundary and confirmation policy; the study does not treat its thresholds as
+normatively correct.
+
+\paragraph{P3: Uncertainty-and-confirmation patch.}
+``If calendar information is missing, conflicting, or does not establish
+whether arrival time is consequential, present the trade-off and ask the user
+before rebooking.'' This patch leaves the priority open under uncertainty and
+calls for confirmation.
+
+\paragraph{P4: Defer the Skill edit.}
+Retain the current Skill until the participant can state a supported behavioral
+scope. This option records that the available evidence does not yet justify a
+persistent revision.
+
+\section{Wizard-of-Oz Evidence Bank and Facilitation Rules}
+\label{app:wizard}
+
+\subsection{Evidence-bank construction}
+
+Freeze the evidence bank before the first analyzed session. Use
+\ModelVersion{} accessed or frozen on \ModelDate{}, with the same system
+configuration, tool outputs, sampling parameters, and execution harness for all
+participants. Record model identifier, endpoint, temperature, maximum tokens,
+tool schemas, prompt templates, and any unavailable seed control. Preserve raw
+inputs, tool events, outputs, timestamps, and evaluator annotations.
+
+At minimum, precompute:
+
+\begin{itemize}[leftmargin=*]
+    \item five repeated executions for the original skill in each scenario
+    context;
+    \item five executions for each candidate patch in the motivating,
+    preservation, and boundary contexts;
+    \item selected rule-level what-ifs, such as omitting the airline preference,
+    fare preference, calendar check, or a relevant pair;
+    \item complete and incomplete calendar-tool states;
+    \item old-versus-new comparisons that expose both local success and possible
+    behavioral overreach.
+\end{itemize}
+
+These runs support the formative probe; they do not substitute for the later
+technical validation of any intervention method. If the precomputed model does
+not naturally produce the intended variation, report the actual evidence.
+Revise the study materials during the pilot; never manually edit model outputs.
+
+\subsection{Evidence-card format}
+
+Every evidence card contains:
+
+\begin{enumerate}[leftmargin=*]
+    \item the participant's request or the common question addressed;
+    \item the exact context and configuration compared;
+    \item a compact summary of decisions and observable actions;
+    \item the number of repeated executions;
+    \item a visible indicator of agreement or variation;
+    \item expandable raw outputs and tool events;
+    \item a neutral limitation statement, such as ``This comparison does not
+    establish a unique cause.''
+\end{enumerate}
+
+The card must not contain a generated root-cause explanation, a responsible-
+instruction label, or language that endorses a candidate patch.
+
+\subsection{Request taxonomy and lookup}
+
+The taxonomy in Table~\ref{tab:request-taxonomy} is used only by the facilitator
+to retrieve a card; it is not shown to participants.
+
+\begin{table}[h]
+\centering
+\caption{Wizard request taxonomy.}
+\label{tab:request-taxonomy}
+\begin{tabularx}{\linewidth}{P{0.22\linewidth}Y Y}
+\toprule
+\textbf{Request type} & \textbf{Examples} & \textbf{Response rule} \\
+\midrule
+Context request & ``Show a case without a hard commitment'' & Return nearest precomputed context; state differences explicitly \\
+Repeat request & ``Run the same case again'' & Return all remaining repetitions, not a selected favorable subset \\
+Artifact what-if & ``Ignore the airline rule'' & Return corresponding fixed intervention card \\
+Tool-state request & ``Did the calendar return the event?'' & Return exact observable tool result; do not infer hidden state \\
+Patch comparison & ``Compare broad versus scoped edits'' & Return fixed side-by-side old/new evidence \\
+Raw evidence & ``Show me the underlying outputs'' & Expand unabridged executions and tool calls \\
+Unsupported request & Request has no frozen card & State that the evidence is unavailable; ask what decision it would inform; log the gap \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+When multiple cards could match, use a prewritten priority order based on
+semantic proximity, not on which card best supports the paper's hypothesis. A
+second researcher should audit a random sample of session-to-card matches.
+
+\subsection{Common-evidence counterbalancing}
+
+Use the four orders in Table~\ref{tab:common-orders} in rotation. If the final
+sample is not divisible by four, assign the remaining participants to the least
+used orders.
+
+\begin{table}[h]
+\centering
+\caption{Counterbalanced order of common evidence cards.}
+\label{tab:common-orders}
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Order} & \textbf{1st} & \textbf{2nd} & \textbf{3rd} & \textbf{4th} \\
+\midrule
+A & E1 & E2 & E3 & E4 \\
+B & E2 & E3 & E4 & E1 \\
+C & E3 & E4 & E1 & E2 \\
+D & E4 & E1 & E2 & E3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Facilitator neutrality rules}
+
+The facilitator must:
+
+\begin{itemize}[leftmargin=*]
+    \item use the participant's terminology and delay introducing ``skill,''
+    ``policy,'' or ``workflow'';
+    \item ask what a request is intended to decide before returning evidence;
+    \item return all relevant repeated runs, including discordant examples;
+    \item avoid praising additional testing or portraying release as success;
+    \item avoid stating that an intervention demonstrates causality;
+    \item record unavailable requests and do not approximate them with a live
+    model;
+    \item disclose when a candidate patch was precomputed and not personalized;
+    \item keep a deviation log for any departure from the script.
+\end{itemize}
+
+\section{Study Instruments}
+\label{app:instruments}
+
+\subsection{Breakdown timeline worksheet}
+
+\begin{table}[h]
+\centering
+\caption{Neutral breakdown-reconstruction worksheet.}
+\label{tab:timeline}
+\small
+\begin{tabularx}{\linewidth}{P{0.20\linewidth}Y P{0.22\linewidth}}
+\toprule
+\textbf{Prompt} & \textbf{Participant notes} & \textbf{Evidence status} \\
+\midrule
+Goal / expected outcome & \DataNeeded{SESSION NOTES} & Observed / inferred / uncertain \\
+What happened & \DataNeeded{SESSION NOTES} & Observed / inferred / uncertain \\
+Possible explanations & \DataNeeded{SESSION NOTES} & Evidence for / against / missing \\
+Possible Skill explanation & \DataNeeded{SESSION NOTES} & Policy / instruction / interaction / activation / uncertain \\
+Actions considered or taken & \DataNeeded{SESSION NOTES} & Implemented / rejected / deferred \\
+What remained uncertain & \DataNeeded{SESSION NOTES} & Open question \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The ``possible Skill explanation'' categories are completed by the researcher
+after the interview, not shown to the participant during reconstruction.
+
+\subsection{Stage-transition measures}
+
+At the end of Stages A, B, C, and D, record:
+
+\begin{enumerate}[leftmargin=*]
+    \item current explanation or set of explanations;
+    \item proposed action or non-action;
+    \item confidence in the explanation (0--100);
+    \item confidence in the proposed action's scope (0--100);
+    \item behavior believed likely to change elsewhere;
+    \item behavior believed important to retain;
+    \item unresolved trade-offs;
+    \item evidence still desired.
+\end{enumerate}
+
+These ratings support process tracing and within-participant comparison. Do not
+use them to claim causal effects of individual evidence cards or population-
+level calibration.
+
+\subsection{Repair-scope worksheet}
+
+After the common evidence set, use Table~\ref{tab:scope-worksheet}. Ask the
+participant to phrase entries behaviorally, not as instruction numbers.
+
+\begin{table}[h]
+\centering
+\caption{Repair-scope worksheet introduced only after open evidence seeking.}
+\label{tab:scope-worksheet}
+\begin{tabularx}{\linewidth}{YYY}
+\toprule
+\textbf{Should behave differently} & \textbf{Should remain stable} & \textbf{Not ready to decide} \\
+\midrule
+\DataNeeded{PARTICIPANT ENTRY} & \DataNeeded{PARTICIPANT ENTRY} & \DataNeeded{PARTICIPANT ENTRY} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+For each entry, ask which concrete context supports it and whether the judgment
+reflects a domain policy, an assumption about the current skill, or an observed
+execution.
+
+\subsection{Delegation cards}
+
+\begin{table}[h]
+\centering
+\caption{Responsibilities sorted into User, AI, or Shared during the exit interview.}
+\label{tab:delegation-cards}
+\begin{tabularx}{\linewidth}{P{0.34\linewidth}Y}
+\toprule
+\textbf{Responsibility} & \textbf{Follow-up prompt} \\
+\midrule
+Decide whether the observed behavior is acceptable & What knowledge or accountability is required? \\
+Generate contrasting future contexts & When should AI ask before generating cases? \\
+Repeat executions and summarize variation & How much raw evidence is needed? \\
+Choose a skill-level what-if intervention & Should the user approve each intervention? \\
+Choose an instruction-level what-if or interaction test & Which instructions should remain fixed? \\
+Draft a textual patch & Must the user understand every textual change? \\
+Edit or approve the final skill text & Does this depend on artifact familiarity or stakes? \\
+Judge whether the candidate changed the intended behavior & What context coverage is enough? \\
+Decide whether established behavior was preserved & Who defines preservation commitments? \\
+Release, revise, gather evidence, or defer & Who holds final authority and why? \\
+Save rationale and regression cases for future maintenance & What should become persistent documentation? \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Final action record}
+
+For the selected action, record:
+
+\begin{itemize}[leftmargin=*]
+    \item implementation mode;
+    \item final action category;
+    \item evidence considered sufficient;
+    \item evidence considered missing;
+    \item accepted unresolved regions;
+    \item perceived consequences of a wrong decision;
+    \item who should be notified or involved in a real deployment;
+    \item what should be preserved as a future regression case.
+\end{itemize}
+
+\section{Data Analysis and Claim Audit}
+\label{app:analysis}
+
+\subsection{Analytic units and provenance}
+
+Segment the corpus into \emph{events}: a participant states an expectation,
+reports an observation, offers an explanation, requests or receives evidence,
+changes an interpretation, revises repair scope, delegates a responsibility, or
+makes an action decision. Every event retains links to participant, activity
+(real incident or probe), timestamp, artifact/evidence card, and preceding
+state. This provenance prevents quotations from being separated from the
+evidence conditions under which they occurred.
+
+A main-text finding should not rest solely on stated preferences. Unless the
+finding is explicitly about current practice, support it with at least two data
+forms, such as a real-incident account plus a probe action, or a participant
+request plus a later interview rationale.
+
+\subsection{First-cycle inductive event coding}
+
+The first cycle does not begin with the user--skill--workflow triad. Analysts
+code participants' own terms using the families in Table~\ref{tab:first-cycle}.
+The listed codes are starting prompts, not a closed codebook.
+
+\begin{table*}[t]
+\centering
+\caption{Initial event-code families.}
+\label{tab:first-cycle}
+\begin{tabularx}{\textwidth}{P{0.18\textwidth}P{0.29\textwidth}Y}
+\toprule
+\textbf{Family} & \textbf{Example codes} & \textbf{Analytic question} \\
+\midrule
+Expected behavior & goal, constraint, priority, exception, confirmation & What did the participant believe should happen? \\
+Observed breakdown & output symptom, tool action, omitted step, consequence & What was directly observable? \\
+Inference & presumed priority, hidden interpretation, guessed tool state & Which elements came from observation, and which from inference? \\
+Candidate explanation & policy gap, instruction, interaction, activation condition, variability, tool-derived input & How might the Skill have produced the behavior? \\
+Evidence & artifact text, raw run, repetition, contrastive case, what-if, version history & What supported or weakened an explanation? \\
+Uncertainty & competing explanation, unstable behavior, unresolved policy, missing evidence & What remained unsettled? \\
+Repair action & textual edit, AI-drafted edit, rollback, defer, no action & What Skill change was considered or taken? \\
+Scope move & narrow, broaden, reframe, preserve, mark unresolved, abandon & How did the intended reach change? \\
+Delegation & user, AI, shared; evidence, implementation, policy, release & Who performed or owned the work? \\
+Decision & release, revise, gather evidence, defer & What action followed, and why? \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+Analysts write a memo after each session identifying emergent codes, surprising
+requests, and evidence that contradicts the current story. The research team
+reviews these memos before modifying the codebook.
+
+\subsection{FQ1: Abductive instruction--behavior synthesis}
+
+After first-cycle coding, examine how participants connected observed behavior
+to the reusable Skill. Candidate second-cycle categories may include:
+
+\begin{itemize}[leftmargin=*]
+    \item intended policy or domain judgment;
+    \item individual Skill instruction;
+    \item interaction among Skill instructions;
+    \item context-dependent instruction activation;
+    \item variable enacted behavior;
+    \item insufficient evidence for a Skill edit.
+\end{itemize}
+
+The triadic account is retained only if intended behavior, reusable Skill, and
+enacted workflow form a recurring and explanatory structure across cases.
+Compare participants with different artifact familiarity to determine whether
+instruction--behavior uncertainty reflects implementation expertise or a
+broader property of Skill-mediated workflow control.
+
+\subsection{FQ2: Evidence-to-action process tracing}
+
+Construct a trajectory table for every participant:
+
+\begin{table*}[t]
+\centering
+\caption{Within-participant process-trace schema.}
+\label{tab:process-trace}
+\begin{tabularx}{\textwidth}{P{0.06\textwidth}P{0.17\textwidth}P{0.20\textwidth}P{0.20\textwidth}P{0.14\textwidth}Y}
+\toprule
+\textbf{Time} & \textbf{Evidence requested / received} & \textbf{Interpretation before $\rightarrow$ after} & \textbf{Object of repair before $\rightarrow$ after} & \textbf{Scope move} & \textbf{Action / confidence move} \\
+\midrule
+\DataNeeded{TIME} & \DataNeeded{EVENT} & \DataNeeded{CHANGE} & \DataNeeded{CHANGE} & \DataNeeded{MOVE} & \DataNeeded{MOVE} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+Distinguish three effects:
+
+\begin{enumerate}[leftmargin=*]
+    \item \emph{confirmatory}: evidence changes confidence but not
+    interpretation or scope;
+    \item \emph{specification-changing}: evidence adds, removes, or changes a
+    behavioral commitment or policy boundary;
+    \item \emph{mapping-changing}: evidence changes which instruction or
+    interaction the participant considers relevant to the repair.
+\end{enumerate}
+
+Compare self-requested and common evidence. A claim that contrastive cases help
+construct repair scope requires evidence of specification-changing transitions.
+A confidence increase after a researcher-provided example is insufficient.
+
+\subsection{FQ3: Enacted and stated delegation}
+
+Create a matrix with rows for evidence work, implementation work, policy
+judgment, and release decision, and columns for:
+
+\begin{itemize}[leftmargin=*]
+    \item what the participant requested AI to do in the probe;
+    \item what implementation mode they selected;
+    \item how they allocated the corresponding delegation card;
+    \item what they said they would prefer in their own workflow;
+    \item conditions that changed the allocation, such as consequence,
+    familiarity, traceability, or uncertainty.
+\end{itemize}
+
+Code disagreement among these forms as data. Do not privilege interview
+statements. For example, a participant may claim to prefer manual
+control but choose AI drafting when facing time pressure, or may delegate text
+editing while retaining a release veto.
+
+\subsection{Researcher process and reflexivity}
+
+Two researchers independently analyze an initial subset selected to maximize
+variation in artifact familiarity, workflow consequence, and ownership
+arrangement. They compare event boundaries, identify missing code families, and
+produce a shared event schema. One researcher then leads full-corpus coding;
+the second reviews at least 30\% of sessions, all candidate negative cases, and
+all excerpts considered for the paper. Disagreement is used to refine theme
+boundaries. A reliability statistic would be inconsistent with this
+interpretive analysis.
+
+Maintain:
+
+\begin{itemize}[leftmargin=*]
+    \item a decision log linking codebook and theme revisions to evidence;
+    \item a deviation log for study-protocol changes;
+    \item a quotation audit with source timestamp and consent status;
+    \item a finding matrix showing supporting and disconfirming cases;
+    \item separate memos for real incidents and standardized probe behavior
+    before cross-comparison;
+    \item a reflexivity memo describing the team's assumptions about skills,
+    repair, user control, and the proposed system.
+\end{itemize}
+
+\subsection{Falsification and claim thresholds}
+
+Before finalizing findings, explicitly test the propositions in
+Table~\ref{tab:falsification}. This check protects against a study that can only
+confirm the intended system story; it does not constitute statistical
+falsification.
+
+\begin{table}[h]
+\centering
+\caption{Evidence that would strengthen, weaken, or redirect the paper's core claims.}
+\label{tab:falsification}
+\begin{tabularx}{\linewidth}{P{0.24\linewidth}YY}
+\toprule
+\textbf{Proposition} & \textbf{Evidence that supports it} & \textbf{Evidence that weakens or redirects it} \\
+\midrule
+Skill text does not fully expose instruction effects & Participants revise which instructions or interactions they consider relevant after execution evidence; experts also report context-dependent uncertainty & Most participants reliably identify the relevant instruction and predict behavior from text alone \\
+Repair scope is constructed across cases & Evidence produces new preservation commitments, changed policy boundaries, unresolved regions, or no-edit decisions & Participants begin with complete policies; additional cases only confirm them \\
+Control centers on policy and release, not necessarily manual text authorship & Participants delegate evidence or patch drafting while retaining behavior and release decisions & Participants either insist on complete manual textual ownership or willingly delegate policy and release without review \\
+Behavioral patch review is needed beyond ordinary test-and-diff & Participants revise the object or specification of repair after comparing fixed versions & The main difficulty is simply insufficient regression coverage after a known patch \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A main finding should satisfy four thresholds:
+
+\begin{enumerate}[leftmargin=*]
+    \item it is supported by multiple participants and more than one data form;
+    \item its boundary or heterogeneity is reported;
+    \item at least one plausible disconfirming case has been sought and
+    addressed;
+    \item the wording does not imply causal effectiveness that only a later
+    controlled evaluation can establish.
+\end{enumerate}
+
+If the evidence does not support the provisional finding titles in
+Section~\ref{sec:formative-findings}, replace them. In particular, use the
+controlled study to claim improved workflow legibility, calibrated prediction,
+reduced repair-scope mismatch, or better release decisions. Formative interviews
+alone cannot establish these effects.
+
+\subsection{Descriptive reporting}
+
+Permissible descriptive summaries include:
+
+\begin{itemize}[leftmargin=*]
+    \item number of incidents and candidate objects of repair;
+    \item frequencies of spontaneously requested evidence types;
+    \item numbers of narrow, broaden, reframe, defer, abandon, and no-edit
+    transitions;
+    \item implementation and final-action choices;
+    \item counts of participants contributing to a theme.
+\end{itemize}
+
+Report denominators, distinguish real-incident and probe counts, and avoid
+phrases such as ``most users'' without the sample denominator. Confidence
+ratings and behavioral predictions are elicitation aids; unless the study is
+redesigned and powered accordingly, do not test them inferentially.
+
+\section{Material Freeze and Reproducibility Checklist}
+\label{app:freeze}
+
+Before the first analyzed session, archive the following with immutable version
+identifiers:
+
+\begin{enumerate}[leftmargin=*]
+    \item recruitment screener, consent form, and artifact request;
+    \item moderator script and participant worksheets;
+    \item standardized incident, skill, contexts, and candidate patch set;
+    \item all raw evidence-bank inputs and outputs;
+    \item model, parameter, tool, and harness configuration;
+    \item evidence cards and request-to-card lookup table;
+    \item common-evidence counterbalancing schedule;
+    \item pilot changes and the final freeze decision;
+    \item initial event schema, analytic memos, and deviation-log templates.
+\end{enumerate}
+
+After data collection, archive:
+
+\begin{enumerate}[leftmargin=*]
+    \item de-identified transcripts and retained artifact fragments, subject to
+    consent;
+    \item logs linking sessions to evidence cards and counterbalancing assignments;
+    \item coded event data and process traces;
+    \item codebook and theme revision history;
+    \item finding-by-participant and negative-case matrices;
+    \item quotation audit and consent status;
+    \item the exact counts and excerpts used in the manuscript.
+\end{enumerate}
+
+If public release of participant data is not possible, release the standardized
+materials, evidence bank, moderator script, codebook, synthetic examples of the
+analysis tables, and a data-access statement explaining restrictions.
+
+\DraftNote{Before submission, remove all draft notes and red placeholders; replace the provisional process figure caption; report the actual sample, ethics status, model version, pilot changes, deviations, and negative cases; and ensure that every finding is traceable to audited data.}

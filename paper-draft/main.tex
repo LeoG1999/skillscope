@@ -1,0 +1,116 @@
+% Working layout: CHI 2027 publication-ready two-column format for easier reading.
+% Switch back to manuscript,review,anonymous before the initial review submission.
+% https://chi2027.acm.org/chi-publication-formats/
+\documentclass[sigconf]{acmart}
+
+% Packages used by the formative-study section and its reproducibility appendices.
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+
+% Rights and publication metadata are supplied only after conditional acceptance.
+% Keep the review copy free of placeholder copyright and citation metadata.
+\setcopyright{none}
+\settopmatter{printacmref=false}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{Bib\TeX}}
+}
+
+% TODO: Replace this placeholder after the system name is finalized.
+\providecommand{\systemname}{\textsc{SystemName}}
+\providecommand{\ImplNeeded}[1]{\textcolor{red!75!black}{\textbf{[DETAIL REQUIRED]}}\,\textit{#1}}
+% Formative-study draft markers. Disable only after all placeholders are resolved.
+\definecolor{draftred}{RGB}{165,32,45}
+\definecolor{draftgold}{RGB}{255,246,214}
+\definecolor{draftblue}{RGB}{233,243,252}
+\definecolor{softgray}{RGB}{246,246,246}
+
+\newif\ifshowdraftnotes
+\showdraftnotestrue
+\newcommand{\DataNeeded}[1]{\textcolor{draftred}{\textit{[#1]}}}
+\newcommand{\DraftNote}[1]{%
+  \ifshowdraftnotes
+    \begin{center}
+      \fcolorbox{draftred}{draftgold}{%
+        \parbox{0.94\linewidth}{\small\textbf{Draft-integrity note.} #1}}
+    \end{center}
+  \fi}
+
+\newcommand{\StudyN}{\DataNeeded{FINAL N}}
+\newcommand{\StudyCompensation}{\DataNeeded{COMPENSATION}}
+\newcommand{\StudyEthics}{\DataNeeded{ETHICS/IRB STATUS}}
+\newcommand{\ModelVersion}{\DataNeeded{MODEL AND VERSION}}
+\newcommand{\ModelDate}{\DataNeeded{ACCESS/FREEZE DATE}}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\begin{document}
+
+\title{The Skill Is Not the Workflow: Behavioral Patch Review for Reusable LLM Agents}
+
+\author{Anonymous Author(s)}
+\renewcommand{\shortauthors}{Anonymous Author(s)}
+
+\begin{abstract}
+People increasingly oversee recurring work performed by large language model (LLM) agents, even when they neither program nor directly observe the workflows those agents enact. We study this challenge through agent skills: reusable natural-language instructions that are easy to edit but difficult to reason about from text alone. A failed execution reveals an unacceptable outcome, yet leaves two questions open: which policy should govern similar cases, and how far will a proposed repair reach? We introduce \emph{behavioral patch review}, an interaction model that connects user intent, skill revisions, and enacted workflows. \systemname{} helps workflow owners define the intended scope of a repair across concrete cases, inspect a skill diff enriched with execution evidence, and compare the original and revised skills under matched execution. Controlled interventions help locate relevant instructions, while complete-candidate runs reveal whether the revision changes the behaviors the owner intended to change and preserves those they intended to keep. We evaluate the approach through a formative study of real skill-repair episodes, a technical evaluation of the underlying evidence, and a controlled study of skill understanding, repair-scope alignment, and release decisions. This work frames skill repair as the review of behavioral change across user intent, editable instructions, and enacted workflows.
+% TODO before submission: Insert one concise sentence with the verified primary findings
+% before the final sentence. Prioritize calibration, repair-scope alignment, and release decisions.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+ <concept>
+  <concept_id>10003120.10003121</concept_id>
+  <concept_desc>Human-centered computing~Human computer interaction (HCI)</concept_desc>
+  <concept_significance>500</concept_significance>
+ </concept>
+ <concept>
+  <concept_id>10003120.10003121.10003122</concept_id>
+  <concept_desc>Human-centered computing~Interaction design</concept_desc>
+  <concept_significance>300</concept_significance>
+ </concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Human-centered computing~Human computer interaction (HCI)}
+\ccsdesc[300]{Human-centered computing~Interaction design}
+
+\keywords{agent skills, LLM agents, interactive debugging, counterfactual evidence, end-user programming, human--AI interaction}
+
+\maketitle
+
+\begin{quote}
+\textbf{Draft integrity note.} This working draft contains a placeholder system name, missing-data markers, and provisional findings prose. Replace every placeholder and audit all findings, quotations, analyses, and citations against collected evidence before submission.
+\end{quote}
+
+\input{sections/01-introduction}
+\input{sections/02-related-work}
+\input{sections/03-formative-study}
+\input{sections/04-system}
+\input{sections/05-technical-evaluation}
+\input{sections/05-user-study}
+\input{sections/06-discussion}
+\input{sections/07-limitations}
+\input{sections/08-conclusion}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\clearpage
+\appendix
+\input{sections/appendix-system}
+\input{sections/appendix-formative-study}
+
+\end{document}

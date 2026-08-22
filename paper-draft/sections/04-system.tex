@@ -1,0 +1,304 @@
+\section{\systemname: Behavioral Patch Review for Skills}
+\label{sec:system}
+
+\systemname{} supports skill repair as a review of three related changes. The
+\emph{intended behavioral delta} describes what a workflow owner wants to
+change, preserve, or leave unresolved. The \emph{artifact delta} is the
+revision encoded in the skill. The \emph{enacted behavioral delta} is the
+change observed when the original and revised skills are executed in
+comparable situations. A repair becomes reviewable when these three deltas can
+be examined together rather than inferred from a textual edit or a successful
+rerun of the motivating incident alone.
+
+Figure~\ref{fig:system-overview} summarizes the interaction. The owner first
+constructs a behavioral scope from concrete cases. The system then organizes
+evidence that relates this scope to the current skill and to a candidate
+revision. Matched executions make the behavioral reach of the candidate
+visible before the owner decides whether to release it. These activities are
+iterative: evidence may prompt a revision to the intended scope, the skill, or
+the cases considered relevant. The system therefore provides a shared review
+record rather than treating repair as a one-shot generation task.
+
+\begin{figure*}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{@{}C{0.225\textwidth} C{0.225\textwidth} C{0.225\textwidth} C{0.225\textwidth}@{}}
+        \fbox{\begin{minipage}[t][3.55cm][t]{0.205\textwidth}
+            \textbf{1. Articulate intent}\\[3pt]
+            Examine the failure and nearby cases\\
+            Record behavior to change, preserve,\\
+            or leave unresolved\\[4pt]
+            Construct the intended behavioral delta.
+        \end{minipage}}
+        &
+        \fbox{\begin{minipage}[t][3.55cm][t]{0.205\textwidth}
+            \textbf{2. Assemble evidence}\\[3pt]
+            Relate commitments to source regions\\
+            Inspect relevant executions\\
+            Review evidentiary limits\\[4pt]
+            Connect intent to the current skill.
+        \end{minipage}}
+        &
+        \fbox{\begin{minipage}[t][3.55cm][t]{0.205\textwidth}
+            \textbf{3. Inspect the revision}\\[3pt]
+            Generate, edit, or import a candidate\\
+            Review the textual delta with links\\
+            to intent and evidence\\[4pt]
+            Make the artifact delta legible.
+        \end{minipage}}
+        &
+        \fbox{\begin{minipage}[t][3.55cm][t]{0.205\textwidth}
+            \textbf{4. Review enacted change}\\[3pt]
+            Compare original and revised behavior\\
+            Identify intended effects, regressions,\\
+            and unresolved boundaries\\[4pt]
+            Release, revise, investigate, or defer.
+        \end{minipage}}
+    \end{tabular}
+    \caption{\systemname{} makes the intended, artifact, and enacted deltas
+    jointly reviewable. Evidence connects the owner's behavioral scope to the
+    current skill and candidate revision; matched executions support revision
+    and release decisions.}
+    \Description{Four panels show articulating intended behavior, assembling
+    execution evidence, inspecting a skill revision, and reviewing enacted
+    behavioral change before a release decision.}
+    \label{fig:system-overview}
+\end{figure*}
+
+\subsection{Interaction Overview}
+\label{sec:system-walkthrough}
+
+We illustrate the workflow through Lin, the researcher introduced in
+Section~\ref{sec:introduction}. Her travel-recovery skill selected an
+inexpensive replacement flight that arrived after a fixed conference
+presentation. The execution was plainly unacceptable, but it did not by
+itself establish the policy that should govern future disruptions.
+
+Lin begins by expressing the desired change in her own terms: fixed
+commitments should take priority over price. \systemname{} places this incident
+alongside neighboring cases that expose the reach of such a rule. Lin wants to
+retain cost sensitivity for routine travel and confirmation before a
+consequential purchase, while leaving an extreme fare trade-off unresolved.
+Together, these judgments turn an objection to one outcome into a provisional
+behavioral scope.
+
+The system next brings together relevant parts of the current skill and
+evidence from controlled executions. A targeted source intervention suggests
+that an instruction treating calendar conflicts as a soft trade-off is
+behaviorally relevant in the incident. The result is presented as bounded
+evidence about sensitivity to a source region, not as proof of unique causal
+responsibility or validation of a future revision. Lin can revise her scope if
+this evidence changes her interpretation of the problem.
+
+An AI service then drafts a candidate from the current skill, Lin's recorded
+scope, and the reviewed evidence. \systemname{} presents the candidate as a
+line-based diff. Annotations connect each changed block to the behavioral
+commitment it is intended to address and to the evidence that informed the
+revision. These links make the rationale and provenance of the artifact delta
+inspectable without implying that a textual change has achieved its intended
+effect.
+
+Finally, \systemname{} executes the complete original and revised skills on
+the reviewed cases under matched conditions. Lin can see whether the incident
+is repaired, whether valued behaviors are preserved, and whether the revision
+enters a boundary for which she has not yet defined a policy. She may revise
+the skill or behavioral scope, request further evidence, defer the repair, or
+release the reviewed version. The same scope therefore links her initial
+intent to the textual revision, enacted outcomes, and final decision.
+
+\subsection{Defining the Behavioral Scope of a Skill Repair}
+\label{sec:behavioral-scope}
+
+A review begins with an observable breakdown, the active skill, and the
+available execution record. \systemname{} brings the task context, skill
+instructions, tool activity, decisions, and outcome into a common view. This
+reconstruction helps the owner distinguish what the skill said from what the
+agent enacted and provides a stable point of comparison for later evidence.
+
+The owner constructs a behavioral scope from the motivating incident,
+accepted prior behavior, and contrastive cases. Each case $c$ combines a task
+context, baseline evidence $B_0(c)$, and one of three normative dispositions:
+
+\begin{itemize}[leftmargin=*]
+    \item \textsc{Change}$(g_c)$ identifies behavior the revision should
+    produce, such as selecting an itinerary that arrives before a fixed
+    presentation.
+    \item \textsc{Preserve}$(p_c)$ identifies a valued property that should
+    remain stable, such as requesting confirmation before a consequential
+    purchase.
+    \item \textsc{Unresolved} marks a policy boundary for which the owner is
+    not yet prepared to authorize a general rule, such as the acceptable fare
+    premium for protecting a commitment.
+\end{itemize}
+
+Cases that are relevant to monitoring but outside the current repair can be
+kept outside the candidate author's normative input. If a revision changes one
+of these cases, the system returns it to the owner for judgment rather than
+treating it as evidence of success or failure. This distinction separates
+uncertainty about policy from evidence that an authorized commitment was met.
+
+Commitments can concern decisions, tool calls, action ordering, confirmation
+points, or outcomes. Each is paired with an observable criterion that the
+owner can inspect. The system preserves successive versions of the scope so
+that later evidence can be interpreted against the commitments that were in
+place when a candidate was produced.
+
+\paragraph{Scope anchors and contrastive cases.}
+The motivating incident anchors the repair, but nearby cases clarify its
+intended reach. These cases can come from prior executions, examples supplied
+by the owner, or system-generated contrasts reviewed by the owner. Each
+contrast makes explicit how it differs from an existing case and which policy
+boundary it probes. This comparative representation allows a vague request
+such as ``prioritize important events'' to become a set of concrete, revisable
+commitments without requiring the owner to author a complete policy upfront.
+
+\paragraph{Pre-reveal boundary commitments.}
+Where possible, the owner records these commitments before seeing candidate
+outcomes. This ordering preserves a prospective account of intended behavior
+rather than allowing the observed candidate to redefine the repair
+retrospectively. Selected cases may also remain outside an AI author's input,
+allowing later executions to examine whether the revision extends beyond the
+examples that directly informed it. These cases do not certify generalization;
+they provide bounded evidence about the reach of the reviewed repair.
+
+\subsection{Locating Source Instructions and Reviewing the Repair Preview}
+\label{sec:instruction-effects}
+
+To help the owner relate an observed breakdown to the skill, \systemname{}
+supports targeted interventions on an isolated copy of the source artifact. A
+model-assisted planner identifies an instruction and an already reconstructed
+case that are relevant to the current scope; the execution service then
+compares the original behavior with behavior under bounded variants of that
+instruction. The reviewed skill itself is not changed during this process.
+
+The resulting evidence answers a deliberately narrow question: under the
+selected case and execution conditions, is observable behavior sensitive to
+this source region? It does not establish unique causality, capture
+interactions among all instructions, or validate text that has not yet been
+executed. \systemname{} keeps this limitation visible and retains links to the
+underlying artifact versions, cases, executions, and observable differences.
+
+The repair preview places this source-location evidence alongside the owner's
+behavioral scope. Its purpose is to let the owner review the evidence and
+commitments that will inform implementation, not to ask them to approve a
+system-generated policy. The owner can return to the scope whenever the
+evidence reveals that the intended repair was underspecified. Exact
+interventions and execution budgets for the study instantiation are reported
+in Appendix~\ref{app:probe-protocol}.
+
+\subsection{Reviewing the Skill Diff and Its Behavioral Consequences}
+\label{sec:candidate-review}
+
+The workflow owner may write the candidate skill or delegate its
+implementation to an AI service or collaborator. Regardless of authorship,
+\systemname{} records the candidate as a revision of the current skill and
+associates it with the behavioral scope and evidence available at the time.
+This provenance preserves the distinction between deciding what behavior is
+acceptable and choosing text intended to produce it.
+
+The primary artifact view uses a familiar line-based review layout. Added and
+removed skill text is accompanied by compact annotations that distinguish four
+kinds of information:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Scope commitment} identifies the intended behavior that a
+    changed block is meant to address.
+    \item \textbf{Implementation rationale} records why the candidate author
+    associated that text with the commitment.
+    \item \textbf{Source evidence} shows execution evidence that made the
+    corresponding region of the original skill relevant to the repair.
+    \item \textbf{Candidate evidence}, when available, reports bounded
+    evidence about the behavioral sensitivity of the revised block.
+\end{itemize}
+
+The annotations support navigation between the behavioral and textual objects
+of review; they do not attribute a whole-candidate outcome to a single edited
+block. Evidence about the source skill, an optional intervention on candidate
+text, and execution of the complete candidate therefore remain visibly
+distinct.
+
+After a candidate is committed, \systemname{} executes the complete original
+and revised skills on the reviewed cases. For case $c$, it estimates candidate
+behavior $B_p(c)$ under conditions matched to the baseline $B_0(c)$, including
+task context, tool state, model configuration, and side-effect policy. The
+comparison evaluates the candidate as a whole and organizes the result into
+four review states:
+
+\begin{table}[t]
+    \caption{Primary review states and their meanings.}
+    \label{tab:review-states}
+    \small
+    \begin{tabularx}{\columnwidth}{@{}p{0.25\columnwidth}Y@{}}
+        \toprule
+        \textbf{State} & \textbf{Meaning} \\
+        \midrule
+        Aligned & Available evidence is consistent with a recorded Change or Preserve commitment. \\
+        Mismatch & A desired change remains unmet or a valued behavior regresses. \\
+        Needs judgment & The candidate changes behavior in a region for which the owner has not authorized a target. \\
+        Insufficient evidence & The available executions do not support a stable comparison. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+The workspace gives priority to mismatches, unresolved changes, and
+insufficient evidence while keeping commitments separate. Repairing the
+motivating incident therefore cannot conceal a regression in a behavior the
+owner intended to preserve. Cross-highlighting connects a selected case to its
+commitment, whole-candidate outcome, and related skill blocks, helping the
+owner move between intended, artifact, and enacted deltas.
+
+When a result remains difficult to interpret, the owner can inspect individual
+executions, gather additional evidence, or request a bounded intervention on a
+candidate block. These actions provide further evidence without converting an
+unresolved policy question into an automated judgment. The owner can then edit
+the candidate, revise the scope, defer the repair, or release the reviewed
+version. Cases and criteria accepted during review can inform future
+regression checks.
+
+\paragraph{Behavior evaluation.}
+The evaluated prototype represents behavior through observable tool traces and
+environment outcomes. Fact criteria capture properties such as arrival time or
+ledger creation; trace criteria capture events and ordering, such as
+confirmation preceding booking. In the controlled study, confirmatory outcomes
+use deterministic rules over these reconstructable records rather than an LLM
+semantic judge. Cases without an authorized target are evaluated only for
+material behavioral change and returned to the owner for judgment. The system
+stores observable traces and outcomes, not hidden chain-of-thought.
+
+\subsection{System Architecture, Implementation, and Scope}
+\label{sec:system-implementation}
+
+\systemname{} is implemented as a web-based review workspace backed by an
+orchestration service. A skill comprises natural-language instructions, a
+typed tool interface, and an execution configuration. Each execution receives
+an isolated copy of a stateful tool environment, allowing the system to expose
+realistic decisions, tool results, and side effects without reaching a
+production account. Original, intervened, and candidate skills are retained as
+separate versions so that evidence can be traced to the artifact and context
+that produced it.
+
+LLM services perform bounded interpretive and generative work: they help
+retrieve relevant cases, propose source regions for inspection, draft
+candidate revisions, and explain computed comparisons. They do not fabricate
+tool results, modify recorded owner commitments, determine confirmatory
+outcomes, or authorize release. Execution and evaluation services maintain
+these boundaries by validating tool calls against the scenario environment and
+computing study outcomes from observable traces and end states.
+
+The study instantiation freezes model configurations, scenario worlds,
+candidate-generation inputs, and execution budgets within each condition.
+It also records the provenance of scope revisions, candidate versions,
+executions, and release decisions. These controls support matched comparisons
+and reconstruction of a review without turning the product interaction into an
+experiment-specific sequence. Appendix~\ref{app:system-details} reports the
+data model, intervention protocol, execution configuration, and prompt
+contracts used in the evaluated prototype.
+
+\systemname{} provides bounded evidence about a revision rather than a
+guarantee of behavior outside the reviewed cases and execution conditions.
+Targeted interventions indicate sensitivity, not unique causal responsibility;
+matched executions characterize the complete candidate only within the
+observed contexts. The workflow therefore retains explicit states for
+unresolved policy and insufficient evidence, and allows the owner to keep the
+current skill whenever a revision is not yet justified.

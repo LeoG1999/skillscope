@@ -1,0 +1,27 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+Reusable natural-language skills give workflow owners an editable point of
+control over LLM agents, but the skill text is not the workflow that an agent
+will enact. A failed execution identifies an unacceptable outcome without
+fully specifying the policy that should replace it, and a plausible textual
+revision does not reveal how far its behavioral effects will extend. Skill
+repair therefore requires review across user intent, artifact revision, and
+runtime behavior.
+
+We introduced \emph{behavioral patch review}, an interaction model that makes
+these relationships inspectable before a persistent change is released.
+\systemname{} helps an owner construct a provisional behavioral scope across
+cases, connects that scope to an evidence-augmented skill diff, and compares
+the complete original and revised skills under matched execution. The system
+uses AI to support evidence collection and implementation while preserving
+unresolved policy and release authority as explicit owner judgments.
+
+Our formative, technical, and controlled-study evidence suggests that this
+organization can improve understanding of enacted behavioral change, alignment
+with a prospective repair scope, and evidence-grounded release decisions. More
+broadly, the work argues that maintaining reusable agents should not be framed
+only as prompt editing or automated optimization. The consequential object of
+review is the behavioral change a revised artifact may carry into future
+workflows, and the people who own that change need representations that make
+its intent, implementation, evidence, and limits jointly reviewable.

@@ -1,0 +1,306 @@
+\section{Controlled User Study}
+\label{sec:user-study}
+
+We conducted a controlled study to examine whether behavioral patch review
+helps workflow owners understand and govern a skill repair relative to a
+capability-matched conversational interface. The comparison concerns how
+repair work is represented and reviewed, rather than the presence of any
+single interface control. We evaluated the complete interaction model because
+its contribution lies in connecting intent, artifact revision, and enacted
+behavior; the study does not estimate the isolated effect of each workspace
+component.
+
+\subsection{Research Questions and Conditions}
+
+The study addressed three research questions:
+
+\begin{description}[leftmargin=0pt,labelindent=0pt,style=nextline]
+    \item[\textbf{RQ1: Behavioral understanding.}] Does the structured
+    workspace help owners understand the enacted behavioral change produced by
+    a candidate revision?
+    \item[\textbf{RQ2: Repair scope.}] Does it help owners construct and
+    maintain a repair scope across intended changes, valued behavior, and
+    unresolved boundaries?
+    \item[\textbf{RQ3: Release judgment.}] Does it support decisions that are
+    better calibrated to the available evidence while preserving the owner's
+    authority over release?
+\end{description}
+
+In the \emph{workspace} condition, behavioral commitments, the skill
+revision, and matched execution evidence remain persistently visible and
+cross-linked. In the \emph{chat} condition, participants can access the same
+skill, cases, evidence-generating operations, and revision capabilities
+through conversation, but these objects are presented sequentially rather
+than integrated into a persistent review representation. Both conditions ask
+participants to make the same substantive judgments about the motivating
+incident, neighboring cases, candidate revision, and final disposition.
+
+The two conditions use the same underlying model, candidate-generation
+process, typed tool runtime, scenario worlds, case exposure, outcome criteria,
+and execution budgets. Interface organization is therefore the primary
+manipulation: the workspace externalizes relationships among intent, artifact,
+and enacted behavior, whereas the chat condition requires participants to
+maintain and reconcile those relationships through the conversation. Exact
+configurations and execution protocols are reported in
+Appendix~\ref{app:system-details}.
+
+\subsection{Design, Tasks, and Assignment}
+
+We used a counterbalanced within-participant design with two domains:
+travel-disruption rebooking and expense-receipt review. Each participant
+completed one task in each condition and encountered each domain only once,
+avoiding direct repetition of the same repair problem. Four assignment
+sequences balanced condition order, domain order, and condition--domain
+mapping. We determined the final sample size through
+\DataNeeded{DESCRIBE THE A PRIORI POWER ANALYSIS, TARGET EFFECT, POWER, AND
+ALLOWANCE FOR EXCLUSIONS} after a usability pilot whose participants did not
+enter confirmatory analyses.
+
+Each task placed the participant in the role of a workflow owner responsible
+for reviewing a problematic execution and deciding whether a revised skill is
+ready for reuse. The scenario includes the motivating incident, visible
+contrastive cases that probe desired changes and preservation constraints, a
+policy boundary, and cases reserved for post-decision assessment. Selected
+cases were withheld from candidate generation to distinguish direct repair of
+visible examples from transfer to behavior that did not guide the revision.
+Both conditions disclosed that all actions occurred in an isolated
+environment, but neither revealed the injected fault, a reference repair, or
+the hidden assessment criteria.
+
+\subsection{Participants}
+
+We recruited \StudyN{} adults who
+\DataNeeded{REPORT ELIGIBILITY CRITERIA, INCLUDING EXPERIENCE WITH LLM TOOLS,
+RECURRING WORKFLOWS, OR REVIEW OF AUTOMATED OUTPUTS}. We did not require
+participants to program or directly author an agent skill because the target
+role was the person responsible for acceptable behavior and release. The
+sample included \DataNeeded{REPORT AGE SUMMARY, GENDER ONLY AS COLLECTED,
+EDUCATION OR OCCUPATIONAL BACKGROUND, LLM EXPERIENCE, AND RELEVANT DOMAIN
+EXPERIENCE}. \DataNeeded{REPORT WHETHER AND HOW MANY PARTICIPANTS HAD PRIOR
+EXPERIENCE EDITING PROMPTS, SKILLS, OR AUTOMATIONS}.
+
+Participants received \StudyCompensation{} for a session lasting
+\DataNeeded{PLANNED AND OBSERVED SESSION DURATION}. The study was reviewed
+under \StudyEthics{}. We excluded \DataNeeded{NUMBER} participants according
+to the preregistered criteria because \DataNeeded{REPORT EXCLUSION REASONS};
+\DataNeeded{NUMBER} completed participant records entered the confirmatory
+analysis. A separate \DataNeeded{PILOT N} participants completed the usability
+pilot and were not included in the reported results.
+
+\subsection{Procedure}
+
+Each task followed four phases shared across conditions. First, participants
+inspected the skill and a recurring execution failure, then described what
+should have happened. Second, they examined contrastive cases and recorded
+whether the revision should change the observed behavior, preserve it, or
+leave the policy boundary unresolved. These judgments established a
+prospective repair scope before candidate outcomes were available.
+
+Third, participants reviewed bounded evidence connecting the current behavior to
+the source skill and inspected a candidate revision produced from the same
+information in both conditions. They then compared the complete original and
+revised skills across the reviewed cases. Participants could inspect
+underlying executions, edit or regenerate the candidate, request further
+evidence, revise their scope, defer the repair, or release the candidate. The
+interface recorded scope changes made after outcomes became visible so that
+they could be distinguished from pre-reveal commitments.
+
+Finally, before a previously unseen case was executed, participants predicted
+observable aspects of the candidate's behavior and reported their confidence.
+They then completed experience and workload measures. The final artifact was
+evaluated on the prediction case and on a research holdout that was unavailable
+during the task. These post-decision cases assessed behavioral understanding
+and transfer without changing the participant's completed release decision.
+
+\subsection{Measures}
+
+We preregistered three co-primary outcomes aligned with the research questions
+\DataNeeded{PROVIDE PREREGISTRATION REFERENCE AND STATE ANY DEVIATIONS}.
+\emph{Held-out behavioral understanding} combines accuracy on observable
+predictions about a previously unseen case with calibration derived from
+participants' confidence. \emph{Behavioral-scope adherence} measures the
+proportion of pre-reveal Change and Preserve commitments satisfied by the final
+candidate; cases intentionally left unresolved do not enter this denominator.
+\emph{Evidence-calibrated decision quality} assesses whether the terminal
+action and its rationale are supported by the evidence available at the time.
+A release is unsupported when an unmet change target, preservation regression,
+execution failure, or material evidence gap remains; a decision not to release
+is evidence-grounded when it identifies a remaining mismatch, unresolved
+consequence, or evidentiary limitation. A change within an unresolved boundary
+requires acknowledgement but is not treated as an error by default.
+
+Secondary outcomes characterized both repair quality and interaction process.
+They included incident resolution, preservation of visible and generator-
+withheld behavior, performance on the blind holdout, identification of case
+roles, regression detection, task time, evidence requests, candidate and scope
+revisions, release path, and consequential failures. Post-task items measure
+participants' understanding of the original and revised skills, ability to
+anticipate behavior, awareness of repair boundaries, perceived sufficiency of
+evidence, explainability of the final decision, and perceived control. We also
+collected the six Raw TLX dimensions and report them separately.
+
+\subsection{Analysis and Data Integrity}
+
+Confirmatory models included condition, domain, period, and order as fixed
+effects and participant as a random intercept. We used mixed-effects models
+appropriate to binary, continuous, and count outcomes, applied the
+preregistered multiplicity procedure to the three co-primary outcomes, and we
+report effect sizes with confidence intervals. The two domains were treated as
+fixed task contexts, not as a random sample of all possible agent workflows.
+
+The system recorded the skill and scope versions, timing of outcome reveals,
+candidate provenance, execution traces, evidence requests, and terminal
+decision for each task. This record supports reconstruction of the evidence
+available to a participant without exposing reference repairs or hidden
+holdouts during the interaction. Questionnaire responses were joined to this
+record only after the task was complete.
+
+Before confirmatory data collection, we completed technical acceptance,
+calibrated the faulty and reference behaviors across all study cases, tested
+the end-to-end candidate path, audited both conditions for information
+leakage, and conducted a separate usability pilot. We then froze the study
+build; \DataNeeded{REPORT ANY POST-FREEZE DEVIATIONS OR STATE THAT NONE
+OCCURRED}. Appendix~\ref{app:system-details} documents the exact configuration
+and reconstruction protocol.
+
+\subsection{Results}
+
+\begin{table*}[t]
+    \caption{Co-primary outcomes by condition. Values and model estimates are
+    placeholders pending the confirmatory analysis. Higher values indicate
+    better performance for prediction accuracy and scope adherence; lower
+    Brier scores indicate better calibrated predictions.}
+    \label{tab:user-study-primary}
+    \small
+    \begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}Y Y Y@{}}
+        \toprule
+        \textbf{Outcome} & \textbf{Workspace} & \textbf{Chat} &
+        \textbf{Condition effect} \\
+        \midrule
+        Held-out prediction accuracy &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{MODEL EFFECT, CI, ADJUSTED P} \\
+        Prediction calibration (Brier) &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{MODEL EFFECT, CI, ADJUSTED P} \\
+        Behavioral-scope adherence &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{MODEL EFFECT, CI, ADJUSTED P} \\
+        Evidence-calibrated decision quality &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{ESTIMATE AND CI} &
+        \DataNeeded{MODEL EFFECT, CI, ADJUSTED P} \\
+        \bottomrule
+    \end{tabularx}
+\end{table*}
+
+\paragraph{Task completion and condition integrity.}
+Participants completed \DataNeeded{NUMBER OF ANALYZED TASKS} analyzed tasks.
+\DataNeeded{REPORT INTERRUPTIONS, RESUMED TASKS, EXECUTION FAILURES, AND ANY
+MISSING QUESTIONNAIRES}. Audit records confirmed that the two conditions used
+the same scenario artifacts, candidate-generation inputs, execution evidence,
+and outcome criteria in \DataNeeded{PROPORTION OF TASKS; EXPLAIN ANY
+DEVIATIONS}. The manipulation check showed that participants experienced the
+workspace as a more persistent and connected representation of the repair
+\DataNeeded{REPORT ITEM OR CHECK, EFFECT, CI, AND P}, while access to the skill,
+cases, and repair operations did not differ substantively
+\DataNeeded{REPORT CAPABILITY-PARITY CHECK}. We found
+\DataNeeded{REPORT PERIOD, ORDER, AND DOMAIN EFFECTS, INCLUDING ANY
+CONDITION--DOMAIN INTERACTION}.
+
+\paragraph{RQ1: The workspace improved understanding of enacted behavioral
+change.}
+Participants predicted behavior on the previously unseen case more accurately
+in the workspace condition than in chat (Table~\ref{tab:user-study-primary}).
+The estimated difference was \DataNeeded{PREDICTION-ACCURACY EFFECT, CI,
+ADJUSTED P, AND EFFECT SIZE}. Their confidence was also better calibrated:
+selected-answer Brier scores were lower by \DataNeeded{BRIER EFFECT, CI,
+ADJUSTED P}. \DataNeeded{REPORT WHETHER THE BENEFIT CAME FROM CORRECTLY
+ANTICIPATING DECISIONS, TOOL ACTIONS, CONFIRMATION ORDER, OUTCOMES, OR A
+COMBINATION}.
+
+The behavioral prediction result was consistent with participants' experience
+ratings. They reported greater understanding of the candidate
+\DataNeeded{ITEM ESTIMATE, EFFECT, CI, P} and greater ability to anticipate its
+behavior \DataNeeded{ITEM ESTIMATE, EFFECT, CI, P}. Interaction records suggest
+that workspace participants used the cross-links among cases, commitments, and
+the skill diff to reconstruct why behavior changed
+\DataNeeded{REPORT RELEVANT NAVIGATION OR EVIDENCE-VIEWING PATTERN}. In chat,
+participants more often requested or produced repeated summaries of earlier
+cases \DataNeeded{COUNT OR PROPORTION AND COMPARISON}, indicating that the same
+evidence was harder to maintain as a single review object. A participant
+described the contrast as \emph{``\DataNeeded{VERIFIED POST-TASK QUOTE ABOUT
+CONNECTING THE REVISION TO BEHAVIOR ACROSS CASES}.''}
+
+\paragraph{RQ2: The workspace produced repairs that better respected their
+prospective scope.}
+Final candidates in the workspace condition satisfied a greater proportion of
+the participants' pre-reveal Change and Preserve commitments
+\DataNeeded{SCOPE-ADHERENCE EFFECT, CI, ADJUSTED P, AND EFFECT SIZE}. Incident
+success was \DataNeeded{WORKSPACE AND CHAT RATES}, while preservation of
+visible behavior was \DataNeeded{WORKSPACE AND CHAT RATES}. The difference was
+especially apparent on the generator-withheld Preserve case
+\DataNeeded{TRANSFER EFFECT, CI, P}, which did not directly inform candidate
+generation. Blind-holdout performance showed \DataNeeded{REPORT DIRECTION,
+MAGNITUDE, CI, AND WHETHER THE RESULT WAS CONFIRMATORY OR EXPLORATORY}.
+
+Participants using the workspace identified more preservation regressions
+before their terminal decision \DataNeeded{EFFECT, CI, P} and were more likely
+to acknowledge a material change in an Unresolved case
+\DataNeeded{EFFECT, CI, P}. They made \DataNeeded{WORKSPACE VERSUS CHAT SCOPE
+REVISIONS} scope revisions after seeing candidate behavior. Inspection of
+these revisions showed that \DataNeeded{REPORT HOW OFTEN THEY CLARIFIED A
+GENUINE POLICY BOUNDARY VERSUS RETROFITTED INTENT TO THE CANDIDATE}. This
+distinction is important: behavioral patch review supported revising an
+underspecified scope, but did not treat post-reveal agreement as evidence that
+the original repair had been well scoped.
+
+\paragraph{RQ3: Release decisions were better calibrated to available
+evidence.}
+Workspace participants reached an evidence-supported terminal decision in
+\DataNeeded{WORKSPACE RATE} of tasks, compared with \DataNeeded{CHAT RATE} in
+chat \DataNeeded{MODEL EFFECT, CI, ADJUSTED P}. They released a candidate while
+a recorded Change or Preserve mismatch remained in \DataNeeded{WORKSPACE RATE}
+versus \DataNeeded{CHAT RATE} of eligible tasks, and they explicitly cited an
+unresolved consequence or evidence limitation when declining release in
+\DataNeeded{WORKSPACE RATE} versus \DataNeeded{CHAT RATE}. The result was not
+simply greater reluctance to act: when the candidate satisfied the visible
+scope and evidence was stable, workspace participants released it in
+\DataNeeded{RATE}, compared with \DataNeeded{RATE} in chat.
+
+Decision rationales in the workspace condition more often referred to both a
+desired change and a preservation or boundary consideration
+\DataNeeded{CODING PROCEDURE, AGREEMENT, RATES, EFFECT, AND P}. Participants
+also reported greater evidence sufficiency \DataNeeded{EFFECT, CI, P},
+decision explainability \DataNeeded{EFFECT, CI, P}, and perceived control
+\DataNeeded{EFFECT, CI, P}. One participant summarized the division of labor:
+\emph{``\DataNeeded{VERIFIED QUOTE ABOUT THE SYSTEM DOING EVIDENCE OR
+IMPLEMENTATION WORK WHILE THE PARTICIPANT RETAINED THE RELEASE DECISION}.''}
+
+\paragraph{Workload and interaction cost.}
+The improvement in the co-primary outcomes did not require reliably longer
+tasks: completion time differed by \DataNeeded{TIME EFFECT, CI, P}, with median
+times of \DataNeeded{WORKSPACE MEDIAN} and \DataNeeded{CHAT MEDIAN}. Workspace
+participants inspected \DataNeeded{MORE, FEWER, OR SIMILAR} distinct evidence
+items and requested \DataNeeded{MODEL OR EXECUTION CALL COMPARISON}. Raw TLX
+mental demand was \DataNeeded{DIRECTION, EFFECT, CI, P}; the remaining Raw TLX
+dimensions showed \DataNeeded{REPORT PATTERN WITHOUT COLLAPSING DIMENSIONS INTO
+AN UNJUSTIFIED COMPOSITE}. We observed \DataNeeded{NUMBER AND DESCRIPTION} tasks
+in which the workspace's additional structure slowed an otherwise simple
+repair, providing a boundary on when the interaction is beneficial.
+
+\subsection{Study Summary}
+
+Across two task domains, the results were consistent across the three
+levels of behavioral patch review. The structured workspace improved
+participants' ability to anticipate the enacted delta, helped their final
+revision adhere to a prospectively recorded behavioral scope, and supported
+terminal decisions that better reflected the available evidence. Process and
+experience measures suggest that the benefit came from keeping cases,
+commitments, skill changes, and executions available as one reviewable object,
+rather than from providing additional agent capabilities. The study evaluates
+the integrated interaction model and does not identify which individual visual
+representation is necessary or sufficient for the observed effects.

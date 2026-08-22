@@ -1,0 +1,81 @@
+\section{Limitations and Future Work}
+\label{sec:limitations}
+
+Our results should be interpreted within the bounded settings in which the
+system and studies were evaluated. The formative study examined
+\DataNeeded{CHARACTERIZE THE PARTICIPANT POPULATION AND RANGE OF REPAIR
+EPISODES}, and the controlled study placed participants in the role of a
+workflow owner during two short, consequential but simulated tasks. This
+design allowed us to compare conditions under matched evidence, but it does
+not reproduce the accumulated context, organizational pressure, or delayed
+consequences of maintaining an agent over weeks or months. Participants'
+authority in the study was assigned by the task; in practice, the person
+editing or approving a skill may not be the person most affected by its
+behavior. Longitudinal deployments should examine how behavioral scopes and
+release records evolve through repeated breakdowns and handoffs among owners,
+maintainers, and affected stakeholders.
+
+The controlled study used two fixed domains, one model configuration, typed
+tool interfaces, and sandboxed world states. These choices provided
+reconstructable outcomes and prevented study actions from affecting real
+accounts. They also limit ecological and domain generality. Travel recovery
+and expense review contain explicit decisions, constraints, and side effects;
+skills for creative, interpersonal, or open-ended analytical work may not
+admit equally clear fact or trace criteria. Future work should study domains in
+which behavior must be reviewed through human judgment, contested values, or
+longer temporal horizons, and should test whether the interaction remains
+useful across models and changing tool environments.
+
+Our scenario packs supplied a bounded set of realistic contrastive cases. In
+an open-world product, relevant cases may be missing from logs, expensive to
+reconstruct, or impossible to execute safely. Model-generated cases may also
+reflect the model's own assumptions and narrow the policy space presented to
+the owner. \systemname{} therefore treats suggested cases as proposals and
+retains their provenance, but the present study cannot establish the coverage
+of this process. Retrieval from historical incidents, collaborative case
+authoring, and methods for identifying absent stakeholder perspectives are
+important complements to automated contrast generation.
+
+The evidence mechanisms have corresponding technical limits. Repeated
+executions characterize behavior only under the selected cases, artifact
+versions, model settings, and tool snapshots. A fixed execution budget may
+miss low-frequency failures, while model or service updates can invalidate an
+earlier comparison. Deterministic evaluators improve reconstructability but
+cover only behavior represented in the trace or world state. Targeted
+instruction interventions provide conditional sensitivity evidence; they do
+not identify unique causality, exhaust interactions among instructions, or
+guarantee that a candidate will generalize. Behavioral patch review should
+therefore be understood as bounded review evidence, not verification or safety
+certification.
+
+The user study compares an integrated workspace with a capability-matched chat
+interface. This design tests the behavioral patch review model as a whole but
+cannot attribute an observed benefit to persistent scope, cross-highlighting,
+the structured diff, or side-by-side execution evidence individually. Factorial
+or ablation studies could examine which representations are necessary under
+different repair complexity. The within-participant design also introduces
+possible learning and carryover despite counterbalancing, and the two domains
+are fixed task contexts rather than samples from a population. We report order
+and domain effects but avoid claiming domain-independent effect sizes.
+
+Several outcomes measure different notions of repair quality. Scope adherence
+captures whether a candidate respects the participant's prospective
+commitments, not whether those commitments constitute an objectively correct
+policy. Hidden cases and preregistered criteria provide complementary evidence
+about transfer and consequential failures, but they necessarily encode
+researcher judgments about the scenarios. Likewise, decision quality evaluates
+consistency with visible mismatches and evidence gaps; it does not imply that
+release is mandatory whenever those blockers are absent. Future studies should
+examine collective review, disagreement among legitimate authorities, and
+decisions for which several policies are defensible.
+
+Finally, making a release auditable does not make it legitimate. Execution
+traces and historical cases can contain sensitive personal or organizational
+information, and preserving provenance can conflict with data minimization or
+deletion requirements. A workflow owner may also lack authority to define
+behavior for people affected by the agent. Production systems will require
+access controls, retention policies, appeal mechanisms, and ways to represent
+stakeholders who are not present during repair. Behavioral patch review offers
+a structure for exposing commitments and evidence, but broader governance must
+determine who may author those commitments and who bears the consequences of a
+released change.

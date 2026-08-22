@@ -1,0 +1,130 @@
+\section{Discussion}
+\label{sec:discussion}
+
+The formative and evaluation results together reposition skill repair from
+editing a natural-language artifact to governing a change in recurring agent
+behavior. Participants could often recognize an unacceptable outcome before
+they could state the reusable policy that should replace it. The system study
+suggests that resolving this articulation gap requires more than an improved
+text editor or a larger set of automatically generated tests. Workflow owners
+benefited from keeping their intended behavioral delta, the candidate's
+artifact delta, and its enacted behavioral delta available as related but
+non-equivalent objects of review.
+
+\subsection{The Unit of Review Is a Behavioral Change, Not a Textual Patch}
+
+Code review works partly because the reviewed artifact has a comparatively
+direct relationship to later execution. Natural-language skills weaken that
+relationship: a small edit may interact with the task context, other
+instructions, tool results, and model variation, while a substantial textual
+change may leave observable behavior untouched. Existing prompt and agent
+evaluation systems make important parts of this uncertainty testable
+\cite{arawjo2024chainforge,kim2024evallm,sharma2025promptpex}, but their
+comparison becomes most decisive once the desired behavior is sufficiently
+specified.
+
+Behavioral patch review instead treats the textual diff as one representation
+within a larger review. The scope states the change the owner is prepared to
+authorize; the artifact diff shows how that change was encoded; and matched
+execution provides bounded evidence about what the candidate actually does.
+The improvement in held-out prediction suggests that this organization helped
+participants form a more operational understanding of the revision than the
+same capabilities presented through chat. This is not evidence that textual
+diffs are unhelpful. Rather, familiar artifact review becomes more useful when
+it remains connected to the cases and executions that give the edited text
+behavioral meaning.
+
+This framing also changes what counts as a successful repair. Reproducing the
+desired outcome in the incident is necessary but insufficient. A candidate is
+reviewable only relative to behavior the owner intended to change, behavior
+they intended to preserve, and boundaries for which no rule has yet been
+authorized. The relevant unit is therefore a \emph{relative behavioral
+change}, not an isolated outcome or a globally optimal skill.
+
+\subsection{Repair Scope Is a Provisional Behavioral Specification}
+
+The formative study showed that repair intent was constructed comparatively:
+additional cases did not merely test a pre-existing policy, but exposed
+preservation commitments and trade-offs that participants had not articulated
+from the incident alone. The controlled study extends this observation. The
+workspace produced stronger scope adherence and regression detection even
+though both conditions had access to the same cases and agent operations. The
+result suggests that cases can function as an interactive specification when
+their relationships and normative status remain visible across revision and
+execution.
+
+This specification is deliberately provisional. \textsc{Change} and
+\textsc{Preserve} express commitments that can be evaluated against observable
+behavior, while \textsc{Unresolved} records the absence of an authorized rule.
+Treating unresolved behavior as a first-class state avoids two common
+collapses: allowing the candidate generator to silently settle a domain
+trade-off, or forcing the owner to invent a complete policy before any
+evidence is available. New executions may legitimately alter the scope, but
+preserving pre-reveal judgments distinguishes learning from retrofitting the
+specification to a candidate that has already been observed.
+
+This account complements policy-authoring and test-generation systems
+\cite{lam2025policymaps,lee2026dataprompt,koh2026contrastive}. A living test set
+can evaluate a stable contract, whereas a behavioral scope also records how
+the contract is still being negotiated. For reusable agents, future authoring
+tools should therefore preserve the history and provenance of case-level
+commitments, not only accumulate examples labeled successful or unsuccessful.
+
+\subsection{Evidence Can Support Authority Without Replacing It}
+
+Participants in the formative study distinguished work they were willing to
+delegate from decisions they wanted to retain. They generally accepted AI
+support for retrieving cases, running comparisons, and drafting skill text,
+while treating acceptable policy and release as owner decisions. The user
+study's decision results suggest that a structured evidence record can make
+this division of labor operational: participants made decisions that more
+closely reflected mismatches and evidence gaps without losing perceived
+control.
+
+The distinction is important because additional evidence is not equivalent to
+additional authority. A source intervention may reveal sensitivity to one
+instruction but cannot determine whether the resulting policy is acceptable.
+Matched executions may show that a candidate crossed an unresolved boundary
+but cannot resolve the underlying trade-off. Even a candidate that satisfies
+every reviewed case may behave differently outside that scope. \systemname{}
+therefore automates evidence and implementation work while preserving explicit
+moments at which the owner must interpret, revise, or decline the proposed
+change.
+
+This design differs from both full automation and manual oversight of every
+agent step. Full automation risks turning incomplete evidence into an implicit
+policy, while continuous manual supervision undermines the value of reusable
+agents. Behavioral patch review concentrates owner attention at consequential
+boundaries: defining the intended change, inspecting conflicts between intent
+and execution, and authorizing persistent reuse. In this sense, the system
+supports governance through selective, evidence-grounded intervention rather
+than permanent human involvement in each workflow.
+
+\subsection{Implications for Reusable Agent Maintenance}
+
+Our findings suggest four implications for systems that maintain reusable
+agent artifacts. First, repair interfaces should preserve intent separately
+from implementation. A candidate author can explain how text is meant to
+address a commitment, but that rationale should not overwrite the owner's
+wording or count as behavioral evidence. Second, systems should compare the
+complete revised artifact under matched conditions. Local source or block
+interventions can guide attention, but interactions among instructions make
+whole-candidate execution the relevant basis for release review.
+
+Third, evidence should retain its scope and provenance. Cases, artifact
+versions, model and tool configurations, and exposure to candidate authors all
+shape what a comparison can support. A compact interface may hide these fields
+by default, but it should not detach summaries from reconstructable records.
+Finally, release should create reusable review material rather than end the
+process. Accepted Change and Preserve commitments can become regression cases,
+while Unresolved cases remain visible boundaries for later evidence and policy
+work.
+
+Although we instantiate these implications through agent skills, the model may
+apply to other natural-language artifacts that govern recurring behavior,
+including system prompts, organizational policies, automation routines, and
+agent templates. The key requirement is not a particular file format, but a
+versionable control artifact whose effects can be observed across multiple
+executions and judged by a person with authority over reuse. Determining how
+behavioral patch review changes when authority is distributed across teams or
+institutions remains an important direction for future work.

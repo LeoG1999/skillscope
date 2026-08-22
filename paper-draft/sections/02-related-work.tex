@@ -1,0 +1,106 @@
+\section{Related Work}
+\label{sec:related-work}
+
+Our work brings together end-user programming of AI behavior, interactive
+control of agent workflows, and maintenance of LLM-based systems. These areas
+describe how people express behavior through reusable natural-language
+artifacts, inspect the resulting workflows, and revise them after breakdowns.
+
+\subsection{End-User Programming of AI Behavior}
+\label{sec:rw-eup}
+
+End-user programming enables domain experts to shape computational behavior
+through task-level representations without mastering conventional programming
+\cite{ko2011state}. Reusable natural-language instructions extend this premise
+to LLMs: they are inspectable and editable, yet their operational effects depend
+on model interpretation, surrounding context, available tools, and sampling.
+Prompt-authoring systems such as ChainForge and EvalLM therefore supplement
+text editing with comparative generation and user-defined evaluation criteria
+\cite{arawjo2024chainforge,kim2024evallm}. Policy-authoring systems broaden the
+unit of design from individual outputs to regions of behavior. Policy Maps
+supports exploration of an open-ended behavior space, while Data-Prompt
+Co-Evolution couples prompt revision with edge cases, rationales, neighboring
+examples, and a living test set \cite{lam2025policymaps,lee2026dataprompt}.
+These systems show how examples can articulate behavioral boundaries and
+evaluate an existing policy. This framing is particularly relevant when the
+person accountable for a workflow has domain authority without maintaining
+every underlying instruction. A readable natural-language artifact can support
+control while still leaving its runtime behavior uncertain.
+
+We study these natural-language artifacts after they have entered repeated use.
+A breakdown motivates a \emph{relative} change to a skill that already produces
+behavior its owner values. The owner must decide what should improve, what
+should remain stable, and which instructions implement that boundary.
+Additional cases may surface tacit commitments or unresolved trade-offs,
+allowing the repair specification to evolve with the evidence.
+
+\subsection{Interactive Control of Agent Workflows}
+\label{sec:rw-interactive-control}
+
+Interactive agent systems make runtime activity more actionable through shared
+representations and counterfactual intervention. Cocoa uses an interactive plan
+to support co-planning, delegation, execution, and replanning between a user and
+an agent \cite{feng2026cocoa}. Agent-debugging systems expose complementary
+views of execution: AGDebugger supports navigation, editing, and reset of
+multi-agent conversation branches, while RAG Without the Lag enables rapid
+what-if analysis over retrieval and generation components
+\cite{epperson2025agdebugger,romerolauro2026rag}. These systems show how
+representations connected to runtime actions and alternatives can make agent
+activity more inspectable and steerable than an undifferentiated chat history.
+They also establish a useful interaction pattern: users can intervene in a
+concrete execution without reconstructing the agent's full internal process.
+
+These techniques primarily support the coordination, interpretation, or
+steering of a current task. A trace or branch comparison offers evidence about
+one enacted workflow. Persistent repair also requires evidence about stability
+across runs, transfer across contexts, and alignment with the intended scope.
+Research on appropriate reliance further shows that sources and visible
+inconsistencies can help users recognize uncertainty in AI outputs
+\cite{kim2025reliance}. We extend interactive control from one trajectory to a
+revision that may shape a family of future workflows.
+
+\subsection{Testing and Maintenance of LLM-Based Systems}
+\label{sec:rw-maintenance}
+
+Software maintenance distinguishes repairing a motivating failure from
+protecting behavior that previously worked. Regression testing checks prior
+behavior after a change, while code review makes a proposed patch and its
+rationale inspectable before integration
+\cite{rothermel1996regression,bacchelli2013review}. These practices become less
+direct for LLM artifacts: executions are probabilistic and context-dependent,
+and textual locality does not guarantee behavioral locality. PromptPex extracts
+input--output specifications from a prompt and generates tests that can expose
+invalid behavior and later regressions \cite{sharma2025promptpex}. Contrastive
+Reflection combines failures with nearby successes to propose targeted edits and
+select candidates using held-out validation and optional regression constraints
+\cite{koh2026contrastive}. These methods show how prompt repair can use tests
+and regression constraints to evaluate more than a satisfactory rerun.
+PromptPex is most decisive when the prompt already states the relevant contract,
+while Contrastive Reflection uses held-out examples or task-level criteria to
+rank candidate edits. When the artifact leaves the policy incomplete,
+conflicting, or overly broad, additional evidence may reshape the repair scope
+as well as evaluate a candidate.
+
+Recent systems extend execution-grounded repair from prompts to persistent
+skills and agent harnesses. SkillRevise uses execution traces, candidate
+revisions, re-execution, and empirical utility to improve an initial skill;
+SkillHEX turns falsifiable failure hypotheses into executable tests and searches
+persistent revision branches \cite{liu2026skillrevise,feng2026skillhex}.
+HarnessFix localizes failed trajectories across layers of an agent harness,
+applies scoped repair operators, and validates patches on held-out tasks and
+regressions \cite{chen2026harnessfix}. These systems demonstrate
+execution-grounded diagnosis, revision search, and regression validation across
+several types of agent artifacts. We focus on the reusable skill as the
+owner-facing repair object. Empirical utility, executable tests, and held-out
+tasks can compare revisions once the target is sufficiently specified.
+Workflow owners may still be forming the intended policy and deciding which
+instructions should implement it.
+
+Skill repair often begins while the desired policy remains unsettled. A
+workflow owner may reject one outcome while still deciding how neighboring
+cases should behave, which instructions deserve attention, and what evidence
+would justify reuse. Additional executions can refine the specification or
+reveal effects beyond the motivating case. We study owner-governed skill
+maintenance, complementing automatic repair with support for forming a relative
+behavioral specification, connecting instructions to cross-context evidence,
+and deciding whether to release a persistent change.

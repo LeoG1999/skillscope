@@ -1,0 +1,279 @@
+\section{Formative Study: Understanding and Scoping Skill Repair}
+\label{sec:formative}
+
+Repair episodes expose a recurring asymmetry in agent use: workflow owners can
+recognize an unacceptable execution while remaining uncertain how the skill
+produced it or how future cases should change. We use \emph{workflow owner} to
+describe a person who defines the goals of a recurring task, judges the agent's
+behavior, or bears responsibility for its consequences. We conducted an
+artifact-grounded formative study to examine how workflow owners interpret
+skill behavior, construct the scope of a repair, and divide repair work with
+AI. We asked:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=3pt]
+    \item \textbf{FQ1:} How do workflow owners relate an observed breakdown to
+    the instructions and interactions within a reusable skill?
+
+    \item \textbf{FQ2:} How do additional cases and execution evidence reshape
+    what workflow owners believe should change, remain stable, or remain
+    unresolved?
+
+    \item \textbf{FQ3:} How do workflow owners distribute responsibility
+    between themselves and AI across evidence gathering, repair
+    implementation, and release?
+\end{itemize}
+
+\subsection{Participants, Procedure, and Analysis}
+\label{sec:formative-method}
+
+We recruited \StudyN{} workflow owners who had used an LLM assistant or agent
+for the same recurring task at least five times and had encountered an
+unacceptable execution within the previous six months. Eligibility centered on
+responsibility for the workflow's goals or outcomes; participants did not need
+to author its reusable instructions. Maximum-variation sampling covered
+different levels of familiarity with inspecting or modifying instructions and
+different consequences of incorrect behavior. Some participants primarily
+evaluated domain behavior and relied on a teammate or AI to change the
+configuration, while others regularly maintained system prompts, templates,
+routines, or skills. Before the session, participants provided a redacted
+failure execution, a typical or successful execution from the same workflow,
+and any available instruction, configuration, or revision artifact. Sessions
+lasted approximately 80 minutes; participants received \StudyCompensation{},
+and the protocol was \StudyEthics{}. Appendix~\ref{app:participants} reports
+recruitment and sample details.
+
+Each session included three activities. First, participants used their own
+materials in an \emph{artifact-grounded breakdown reconstruction} (25 minutes)
+to reconstruct the execution, their expectations, the evidence they observed,
+their inferences, and any changes they considered. The interviewer used a
+neutral event timeline and introduced no intent--skill--workflow model or
+candidate instruction. Second, participants completed an \emph{open-ended
+Wizard-of-Oz repair probe} (35 minutes) built around a common travel-recovery
+incident. After seeing the request and observable execution, participants
+received the reusable skill and available tools. They could request another
+context, repeated executions, a rule-level what-if, tool-state evidence, or a
+comparison of candidate revisions. A facilitator retrieved each response from
+a fixed, precomputed execution bank. Every participant then received a
+counterbalanced evidence set with a preservation case, a difficult boundary
+case, repeated runs, and an instruction-level what-if. Participants chose to
+write a revision, request an AI draft, specify the desired behavior, or defer
+the edit, followed by a release, revision, further-evidence, or defer decision.
+Third, a \emph{reflection and delegation interview} (15 minutes) compared the
+probe with participants' own practices and examined preferred representations,
+implementation support, and decision authority. Appendices
+\ref{app:procedure}--\ref{app:instruments} provide the complete materials.
+
+We collected submitted artifacts, transcripts, event timelines, evidence
+requests, successive explanations and repair proposals, behavioral
+predictions, implementation choices, and final decisions. Our analysis had two
+stages. Inductive event coding first characterized observed symptoms, expected
+behavior, candidate explanations, evidence sources, uncertainty, proposed
+actions, scope revisions, and decision rationales. For FQ2, we built
+within-participant process traces linking evidence to changes in interpretation,
+repair scope, confidence, and action. For FQ3, we compared participants' choices
+in the probe with the responsibilities they described in interviews. We then
+conducted an abductive cross-case synthesis of how participants connected
+intended behavior, reusable instructions, and enacted workflows. Two
+researchers independently examined an initial maximally varied subset, refined
+the coding and event schema, and searched the full corpus for disconfirming
+cases. We analyzed real incidents and standardized-probe behavior separately
+before comparing them. Descriptive counts characterize patterns within our
+sample. Appendix~\ref{app:analysis} details the analysis and claim-audit
+process.
+
+\subsection{Findings}
+\label{sec:formative-findings}
+
+% The following titles are provisional analytic propositions. Retain, soften,
+% or replace them only after the full analysis and negative-case review.
+
+\subsubsection{F1. Skill text alone left instruction effects unclear}
+\label{sec:f1-locus}
+
+Across participants' real incidents, \DataNeeded{X of N / NUMBER OF INCIDENTS}
+workflow owners could readily explain why an observed outcome was unacceptable,
+yet lacked a stable account of what should change in the skill. Their accounts
+included an underspecified policy, one instruction, an interaction among
+otherwise reasonable instructions, context-dependent activation, and variable
+execution. Tool results also mattered because they supplied values consumed by
+the instructions. Participants moved among these explanations, with no direct
+progression from a failed output to a faulty line of text. Their accounts varied in
+evidential status: traces exposed some actions or tool results, whereas claims
+about rule priority or model interpretation were often retrospective
+inferences. \DataNeeded{REPORT HOW OFTEN PARTICIPANTS REVISED THE PRESUMED
+RELEVANT INSTRUCTIONS OR INTERACTIONS DURING THE REAL-INCIDENT RECONSTRUCTION.}
+
+Access to the reusable artifact changed, but did not necessarily resolve, this
+uncertainty. Participants with less implementation experience tended to reason
+from desired outcomes, examples, and operational consequences; experienced
+maintainers more readily named instructions and interactions. However,
+\DataNeeded{REPORT WHICH DIFFICULTIES PERSISTED AMONG EXPERIENCED MAINTAINERS,
+SUCH AS PRIORITY, CONTEXT-DEPENDENT ACTIVATION, OR STOCHASTICITY}. The
+standardized probe
+provided a common illustration: after seeing the same incident and later the
+same skill, participants \DataNeeded{REPORT THE RANGE OF INSTRUCTIONS OR
+INTERACTIONS THEY CONSIDERED AND HOW MANY CHANGED THEIR EXPLANATION}. A
+representative participant distinguished
+behavioral judgment from implementation certainty: \emph{``\DataNeeded{VERIFIED
+QUOTE ABOUT KNOWING THE BEHAVIOR WAS WRONG BUT NOT KNOWING WHICH INSTRUCTION OR
+INTERACTION SHOULD CHANGE}.''}
+
+Negative cases bounded this pattern. \DataNeeded{REPORT INCIDENTS IN WHICH THE
+PARTICIPANT RAPIDLY IDENTIFIED THE RELEVANT INSTRUCTION OR INTERACTION}. Taken
+together, the accounts separated workflow accountability from artifact
+expertise. The skill provided an editable control surface, while execution
+evidence helped participants connect its instructions to observable behavior.
+
+\subsubsection{F2. Repair scope was constructed comparatively across cases}
+\label{sec:f2-scope}
+
+Participants initially expressed repair intent in several forms: an objection
+to the visible outcome, a preferred decision for the current case, a candidate
+textual edit, or a broader policy. \DataNeeded{REPORT THE DISTRIBUTION OF THESE
+INITIAL FORMS AND HOW OFTEN INITIAL PROPOSALS OMITTED AN APPLICABILITY BOUNDARY,
+PRESERVATION COMMITMENT, OR UNRESOLVED TRADE-OFF}. These first proposals often
+answered ``what should have happened here'' more clearly than ``which future
+cases should follow the same rule.'' The real incidents showed the practical
+consequence of this gap: \DataNeeded{REPORT HOW MANY PARTICIPANTS DESCRIBED A
+PREVIOUS LOCAL FIX THAT LATER CHANGED ANOTHER DESIRED BEHAVIOR, DELAYED RELEASE,
+OR LED TO ROLLBACK/WORKAROUND}.
+
+The open evidence-request period let us distinguish what participants
+anticipated from what the study subsequently introduced. Participants
+spontaneously requested \DataNeeded{REPORT REQUEST TYPES AND FREQUENCIES:
+CONTRASTING CONTEXTS, REPEATED RUNS, TOOL STATE, WHAT-IFS, PATCH COMPARISONS,
+RAW TRACES}. These requests exposed different uncertainties: some participants
+sought another case to discover the boundary of a rule, while others wanted
+repetition to determine whether the observed behavior was stable. The common
+evidence set then provided comparable pressure on every proposal. A routine
+case could reveal an established behavior that a broad repair would disturb; a
+boundary case could surface a trade-off for which the participant had not yet
+formed a policy; repeated runs could weaken confidence in a single execution;
+and fixed tool-state evidence could clarify which skill conditions had been
+satisfied.
+
+Our process traces captured whether evidence changed more than confidence.
+After self-requested and common evidence, \DataNeeded{X PARTICIPANTS NARROWED,
+Y BROADENED, Z REFRAMED, W DEFERRED, AND V ABANDONED THEIR INITIAL REPAIR}.
+Preservation commitments first appeared \DataNeeded{WHEN/AFTER WHICH EVIDENCE},
+and unresolved regions appeared \DataNeeded{WHEN/AFTER WHICH EVIDENCE}.
+Participants sometimes revised their interpretation of the original workflow
+at the same time as the proposed repair. As one participant explained,
+\emph{``\DataNeeded{VERIFIED QUOTE SHOWING THAT ANOTHER CASE CHANGED WHAT THE
+RULE SHOULD MEAN, NOT ONLY CONFIDENCE IN AN EXISTING EDIT}.''} We also observed
+\DataNeeded{NEGATIVE CASES IN WHICH ADDITIONAL EVIDENCE ONLY CONFIRMED A
+PREVIOUSLY ARTICULATED POLICY}.
+
+Contrastive executions served two roles in these transitions. They tested
+existing commitments and helped participants construct the relative scope of
+change: where behavior should differ, where it should remain stable, and where
+the desired policy remained unsettled. Participants could then narrow, defer,
+or abandon a proposed skill edit when its behavioral scope lacked support.
+
+\subsubsection{F3. Participants separated evidence and implementation work from policy and release authority}
+\label{sec:f3-delegation}
+
+Participants distributed repair work across three forms of responsibility.
+\emph{Evidence work} included generating cases, repeating executions,
+conducting what-if comparisons, and organizing results. \emph{Implementation
+work} included drafting or applying textual revisions. \emph{Policy and release
+work} included judging acceptable behavior, resolving trade-offs, deciding
+whether evidence was sufficient, and authorizing reuse. In the probe,
+participants actually delegated \DataNeeded{REPORT EVIDENCE TASKS AND COUNTS}
+and selected \DataNeeded{COUNTS FOR MANUAL EDITING, AI DRAFTING,
+BEHAVIOR-ONLY SPECIFICATION, DEFERRAL, OR NO EDIT}. These enacted choices did
+not always match their initial statements about preferred control:
+\DataNeeded{REPORT ANY SYSTEMATIC MISMATCH BETWEEN WHAT PARTICIPANTS SAID AND
+WHAT THEY DID}.
+
+Artifact familiarity shaped the level at which participants wanted to engage,
+but it did not map cleanly onto a single allocation of authority.
+\DataNeeded{REPORT HOW LESS-EXPERIENCED WORKFLOW OWNERS AND EXPERIENCED
+MAINTAINERS DIFFERED IN THEIR DESIRE FOR TEXTUAL DETAIL, RAW EXECUTIONS, OR
+MANUAL EDITING}. Perceived consequence also mattered: \DataNeeded{REPORT WHEN
+HIGHER CONSEQUENCE PRODUCED MORE CONSERVATIVE DELEGATION OR STRONGER
+TRACEABILITY DEMANDS}. At the end of the probe, participants chose
+\DataNeeded{COUNTS FOR RELEASE, REVISE, MORE EVIDENCE, AND DEFERRAL}
+and justified these choices in terms of \DataNeeded{DOMINANT DECISION
+CRITERIA}. A participant located their desired authority precisely:
+\emph{``\DataNeeded{VERIFIED QUOTE DISTINGUISHING WILLINGNESS TO DELEGATE
+EXPERIMENTS OR PATCH DRAFTING FROM AUTHORITY OVER BEHAVIOR OR RELEASE}.''}
+
+The accounts varied. \DataNeeded{REPORT PARTICIPANTS WHO INSISTED
+ON DIRECT TEXTUAL AUTHORSHIP, THOSE WILLING TO DELEGATE MOST IMPLEMENTATION,
+AND ANY WILLING TO DELEGATE POLICY OR RELEASE}. Participants negotiated control
+across behavioral commitments, textual implementation, access to evidence, and
+the release decision. This division of labor motivates a workflow in which AI
+can perform evidence and implementation work while users retain access to the
+artifact and authority over whether a behavioral change is ready for reuse.
+
+\paragraph{Synthesis: repair as intent--skill--execution reconciliation.}
+Together, the findings characterize repair as an iterative process
+(Figure~\ref{fig:repair-process}). Workflow owners interpret the current skill,
+construct a provisional scope across cases, inspect relevant instructions,
+implement a candidate revision, and review its behavioral effects. New evidence
+may revise an earlier assumption about the instructions or the policy boundary.
+The skill thus becomes an editable intermediary between user intent and enacted
+workflow behavior.
+
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}[
+        node distance=4.5mm,
+        every node/.style={font=\scriptsize,align=center},
+        box/.style={draw,rounded corners=2pt,fill=draftblue,
+                   text width=0.82\columnwidth,minimum height=7mm,inner sep=3pt},
+        arrow/.style={-{Latex[length=1.6mm]},line width=0.45pt}
+    ]
+        \node[box] (a) {Interpret current skill behavior\\
+        \emph{instructions, interactions, and executions}};
+        \node[box,below=of a] (b) {Construct a provisional repair scope\\
+        \emph{change, preserve, and unresolved commitments}};
+        \node[box,below=of b] (c) {Probe instructions and implement a candidate revision};
+        \node[box,below=of c] (d) {Review the observed behavioral change};
+        \node[box,below=of d] (e) {Release, revise, gather evidence, or defer};
+        \draw[arrow] (a) -- (b);
+        \draw[arrow] (b) -- (c);
+        \draw[arrow] (c) -- (d);
+        \draw[arrow] (d) -- (e);
+        \draw[arrow,dashed] (d.east) -- ++(4mm,0) |- (b.east);
+        \draw[arrow,dashed] (c.west) -- ++(-4mm,0) |- (a.west);
+    \end{tikzpicture}
+    \caption{Provisional process model to retain only if supported by the final
+    analysis. Evidence can revise both the presumed instruction relationship and
+    the intended scope of repair.}
+    \Description{A vertical five-stage process: interpret current skill behavior, construct repair scope, probe instructions and implement a candidate, review behavioral change, and choose release, revision, more evidence, or deferral. Dashed arrows return from later stages to earlier interpretation and scoping.}
+    \label{fig:repair-process}
+\end{figure}
+
+\subsection{Design Goals for Behavioral Patch Review}
+\label{sec:formative-dgs}
+
+We synthesized three design goals for supporting skill repair when runtime
+behavior and the desired policy remain only partially understood.
+
+\paragraph{DG1: Connect skill text to execution evidence.}
+The interface should help users relate skill instructions and edits to behavior
+across repeated executions. Task context and tool results provide controlled
+inputs for these comparisons, and each summary should remain linked to its
+executed intervention and raw runs [F1].
+
+\paragraph{DG2: Make the repair scope explicit and revisable.}
+The interface should help workflow owners articulate where a repair should
+change behavior, preserve established behavior, or leave a policy unresolved.
+These commitments should be grounded in concrete cases and remain editable as
+new executions refine the owner's interpretation. The resulting scope serves
+as both an evolving specification and the reference for reviewing a candidate
+[F1, F2].
+
+\paragraph{DG3: Support evidence-grounded review while preserving release authority.}
+AI may generate cases, run probes, organize comparisons, and draft revisions.
+Workflow owners should be able to see how their behavioral scope guides the
+textual implementation and how the complete revision changes observable
+decisions, tool actions, and outcomes. The workflow should culminate in a choice
+to release, revise, gather more evidence, or defer [F2, F3].
+
+Together, these goals motivate \emph{behavioral patch review}: a shared workflow
+that connects user judgments, reusable skill instructions, execution evidence,
+and enacted behavior. The next section describes how \systemname{}
+operationalizes this process.

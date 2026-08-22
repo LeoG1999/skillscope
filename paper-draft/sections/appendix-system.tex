@@ -1,0 +1,457 @@
+\section{System Specification and Reproducibility Details}
+\label{app:system-details}
+
+This appendix specifies the implemented behavioral patch record, case lifecycle, information barriers, repair-preview and diff-review protocol, fixed execution procedure, mismatch classification, instruction interventions, and model task contracts.
+
+\subsection{Behavioral Patch Record}
+\label{app:patch-record}
+
+A behavioral patch is a versioned review record
+\[
+\mathcal{P}=\langle S_0, V, C_A, C_B, K, M_0, A, S_p, E_p, M_p, H, J, R \rangle,
+\]
+where $S_0$ is the original skill version, $V$ is the behavioral-scope version, $C_A$ is the set of scope anchors, $C_B$ is the set of pre-reveal boundary cases, and $K$ records commitments and their reveal time. $M_0$ stores interventions on source instructions in $S_0$. $A$ records candidate authorship, case exposure, and the confirmed input manifest referencing one scope version and selected $M_0$ entries. $S_p$ is the committed candidate skill, $E_p$ is matched evidence for the complete candidate, and $M_p$ stores optional interventions on candidate blocks. $H$ maps candidate diff blocks to scope, authorship, and correctly typed evidence references; $J$ contains user judgments and overrides; and $R$ is the final reuse decision and rationale. Neither $A$ nor $H$ contains an independent representation of behavioral intent.
+
+\subsubsection{Case record}
+Each case stores the fields in Table~\ref{tab:case-schema}. A case can enter the system from the motivating incident, a historical execution, a user-authored example, or an AI-suggested contrast. Synthetic origin is always visible.
+
+\begin{table*}[t]
+    \caption{Case record used by the behavioral review workspace.}
+    \label{tab:case-schema}
+    \small
+    \begin{tabularx}{\textwidth}{@{}p{0.17\textwidth}p{0.18\textwidth}Y@{}}
+        \toprule
+        \textbf{Field} & \textbf{Type} & \textbf{Purpose} \\
+        \midrule
+        Case ID and source & Identifier; incident, frozen contrast, or post-decision holdout & Establishes provenance and prevents a calibrated case from appearing as observed history. \\
+        Task context & Structured fields plus natural-language description & Reconstructs the task and identifies the factor changed in a contrastive case. \\
+        Environment snapshot & Tool results, data versions, and side-effect policy & Enables matched replay or records why replay is unavailable. \\
+        Baseline configuration & skill hash, model and tool versions, generation settings & Determines whether a cached original execution remains valid. \\
+        Baseline evidence & Runs, normalized events, behavior summary, and stability & Represents $B_0(c)$. \\
+        User disposition & Change, Preserve, Unresolved, or Excluded triage & Specifies a normative scope role, or records that a monitored case is outside this repair. \\
+        Behavioral commitment & Observable target or invariant plus rationale & Represents $I(c)$ for Change or Preserve cases. \\
+        Commitment timing & Timestamp and candidate-reveal state & Distinguishes prior intent from a policy adopted after candidate behavior was visible. \\
+        Evaluator & Deterministic trace, structured fact rule, or user judgment & Documents how behavior is judged and its provenance. \\
+        Candidate-author exposure & Anchor-visible, generator-withheld boundary, or author-exposed boundary & Qualifies transfer claims and reconstructs candidate inputs. \\
+        Candidate evidence & Candidate runs, normalized events, summary, and stability & Represents $B_p(c)$. \\
+        Review state & Aligned, Mismatch, Needs judgment, or Insufficient evidence & Supports mismatch-first review. \\
+        User judgment & Override, new commitment, exception, or unresolved & Records policy decisions and their provenance. \\
+        \bottomrule
+    \end{tabularx}
+\end{table*}
+
+\subsubsection{Scope versioning}
+A scope edit creates a new immutable version when the user changes a disposition, target behavior, criterion, or case membership. This preserves the criteria used for every completed review. Before candidate reveal, the new version simply invalidates the pending preview. After reveal, the system archives the candidate and its comparison, creates a new review round whose inherited rows are explicitly post-reveal, and requires at least one saved scope edit before producing another preview. Each candidate records its scope version, review round, reveal state, and case exposure.
+
+\subsection{Baseline Reconstruction and Skill Inspection}
+\label{app:initial-inspection}
+
+The imported breakdown record contains the task context, current skill hash, observable trace, tool results, environment snapshot, and model configuration. Baseline repetition estimates the stability of the current skill's behavior. Recorded tool results and environment fields form the case fixture used for instruction interventions and candidate comparisons. A contrastive case may change one task or tool field to exercise a different skill condition; all remaining fields are held fixed and recorded. The user can retain the current skill when the available evidence does not justify a candidate. Such a decision stores the reviewed cases and rationale without creating $S_p$.
+
+\subsection{Case Construction and Pre-Reveal Commitment Protocol}
+\label{app:case-protocol}
+
+\paragraph{Case sources.}
+The study build begins with an observed incident and a versioned bank of executable contrasts. A model may rank only identifiers from this bank and explain how each case relates to the owner's latest statement; it cannot generate a new fixture, tool result, evaluator, or oracle. Formal tasks always retain the same three calibrated product cases in both interface conditions. Each case records its changed factors, relation type, frozen world hash, and owner question before it is executed.
+
+\paragraph{Anchor construction.}
+A case enters the normative scope only after the user reviews its context and specifies Change, Preserve, or Unresolved. The patch generator receives the exact visible Change and Preserve commitments. For Unresolved cases, it receives a constraint not to silently define the boundary. A user may instead mark a neighboring case Excluded; that record is omitted from normative generator input but remains in matched release monitoring. The incident must retain a Change target and cannot be excluded.
+
+\paragraph{Pre-reveal boundary construction.}
+Before candidate outcomes exist, the system proposes a small boundary set using historical retrieval or contrastive generation. For each case, the user validates plausibility and records Change, Preserve, or Unresolved. A Change or Preserve commitment includes an observable criterion and evaluator; Unresolved records that no criterion has been authorized. The contexts, commitments, evaluator definitions, and judgment times are then frozen and assigned a hash.
+
+When an AI service or independent collaborator authors the candidate, the orchestration service can withhold selected boundary cases and criteria from that author. These cases are marked generator-withheld. An owner who authors or edits a candidate after viewing a boundary case is exposed to that case; the record changes to author-exposed, and the case cannot support a generator-withheld transfer claim. Both states preserve the pre-reveal judgment because candidate behavior was unavailable when the commitment was recorded.
+
+\paragraph{Boundary interpretation.}
+A pre-reveal Change or Preserve commitment can be classified after matched execution. A pre-reveal Unresolved case can only become Needs judgment when the candidate materially changes it; it is never counted as success or failure. After reveal, the user may retain the judgment, promote the case to a visible anchor for the next revision, revise the commitment, or reject an invalid environment reconstruction. Any substantive edit creates a new scope version and is marked as post-reveal. A subsequent release review must use a fresh boundary case or one whose candidate behavior has not been observed.
+
+\subsection{Candidate Authorship and Information Separation}
+\label{app:patch-generation}
+
+The system separates behavioral authority from textual implementation. Candidate generation follows six steps:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Commit scope.} Freeze anchors, pre-reveal boundary commitments, evaluators, and the scope version before candidate behavior is available.
+    \item \textbf{Construct source-location evidence.} Select one existing instruction and one executed product case, then run deletion and minimal inversion three times each against $S_0$. Store both results in $M_0$; if a valid inversion cannot be formed, stop the preview.
+    \item \textbf{Review the derived preview.} Display the exact commitments copied from $V$, the source instruction, discriminating question, changed fact fields, stability, and reconstruction identifiers. A normative correction returns the user to the scope editor. Confirmation records the displayed scope version, preview hash, and evidence identifiers without restating intent.
+    \item \textbf{Record authorship and exposure.} Identify the candidate author, confirmed input manifest, and cases available during implementation. An independent generator receives $S_0$ and the exact generator-visible commitments and $M_0$ entries referenced by that manifest; designated boundary cases remain outside its context. Owner editing records the boundary cases already seen.
+    \item \textbf{Commit candidate.} Save the exact skill text, artifact diff, diff annotations, author inputs, execution configuration, and hash. Each manual edit creates a new candidate hash and invalidates annotations whose source block changed.
+    \item \textbf{Open behavioral review.} Execute the complete committed candidate on anchors and pre-reveal boundary cases and store the paired results in $E_p$. Candidate outcomes become visible only at this stage. A subsequent block intervention, requested only when useful, is stored separately in $M_p$.
+\end{enumerate}
+
+The preview compiler cannot add, delete, paraphrase, or approve a commitment, and the candidate generator cannot alter the scope or release a skill. Candidate generation returns an edit-to-commitment mapping for changed instructions. This mapping documents implementation provenance and carries no causal status. Source-location evidence, complete-candidate results, and candidate-block sensitivity retain separate types and baselines throughout storage and presentation. The default workflow reviews one active candidate; continuing candidate revision archives the old artifact and comparison while reusing the same locked scope.
+
+\subsection{Execution Budget and Baseline Reuse}
+\label{app:execution-protocol}
+
+\paragraph{Matched execution.}
+Original and candidate comparisons use the same task context, configured model, generation settings, typed tool interfaces, fixed clock, and independently cloned environment snapshot. State-changing tools execute against that isolated world and return their normal typed result schema; they never reach a production account. Each run stores artifact, case, world, tool-schema, and configuration hashes. A cached baseline is reused only when its artifact and snapshot hashes match the current comparison.
+
+\paragraph{Fixed repetition.}
+The frozen study build uses fixed budgets instead of an adaptive stopping rule. The incident baseline and each neighboring-case baseline run three times. The automatic $M_0$ preview tests one source instruction through deletion and minimal inversion, with three runs for each intervention. Matched review uses three original and three complete-candidate runs per case. An optional $M_p$ candidate-block check uses three candidate-baseline and three temporarily masked runs. If the owner explicitly chooses Gather Evidence, the complete original and candidate are each run five times per case as a new comparison. Execution errors are reported separately from unstable modal behavior.
+
+\begin{figure}[t]
+    \centering
+    \fbox{\begin{minipage}{0.92\columnwidth}
+    \small
+    \textbf{Frozen matched-review protocol}\\[2pt]
+    \texttt{original $\leftarrow$ execute($S_0$, clone(case), 3)}\\
+    \texttt{candidate $\leftarrow$ execute($S_p$, clone(case), 3)}\\
+    \texttt{facts $\leftarrow$ extract(tool trace, terminal world)}\\
+    \texttt{status $\leftarrow$ compare(scope row, original, candidate)}\\
+    \texttt{return facts, distributions, status, provenance}\\[2pt]
+    \texttt{on explicit gather: repeat both artifacts with 5 runs}
+    \end{minipage}}
+    \caption{Implemented fixed matched-execution protocol. Additional evidence is a separate, explicit five-run action rather than a hidden adaptive continuation.}
+    \Description{Pseudocode runs the original and candidate three times on cloned case worlds, extracts observable facts, compares them with a scope row, and permits a separate five-run gather action.}
+    \label{fig:fixed-review}
+\end{figure}
+
+\paragraph{User-facing aggregation.}
+The default row displays a canonical behavior summary and distribution, for example ``selected an on-time option in 3/3 runs.'' When outcomes differ or the modal share falls below 0.6, the row is labeled Insufficient evidence. Individual executions and traces remain available in chronological order. The system does not hide technical failures behind a majority outcome or combine distinct commitments into one patch-quality score.
+
+\subsection{Behavior Representation and Evaluators}
+\label{app:evaluators}
+
+The execution normalizer maps raw traces to observable events such as information retrieval, candidate generation, decision, tool invocation, confirmation request, action, and final outcome. A case can use multiple evaluators, each aligned to one behavioral commitment.
+
+\begin{table}[t]
+    \caption{Evaluator hierarchy and default presentation.}
+    \label{tab:evaluator-types}
+    \small
+    \begin{tabularx}{\columnwidth}{@{}p{0.24\columnwidth}Y@{}}
+        \toprule
+        \textbf{Evaluator} & \textbf{Use and review} \\
+        \midrule
+        Deterministic trace assertion & Preferred for explicit events or ordering, such as confirmation preceding booking. Show the assertion and matched events. \\
+        Structured extraction plus rule & Extract a typed value, such as arrival time, then apply a transparent rule. Show extracted values. \\
+        User judgment & Use when the owner resolves an Unresolved or Excluded case. Preserve the paired outputs and rationale. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+For a free-form Change or Preserve commitment, a model may propose candidate criteria, but the study service accepts only trace or fact forms over recorded fields. Evaluation itself is deterministic and each criterion is frozen before candidate outcomes are visible. Unresolved and Excluded cases are not assigned hidden normative targets in the interface; a material fact difference produces Needs judgment. Criteria changes invalidate the pending preview and begin a new scope version.
+
+\subsection{Mismatch Classification}
+\label{app:mismatch-rules}
+
+Let $D(c)$ denote the recorded disposition of case $c$, and let $Q(c,B)$ denote the evidence-backed judgment that behavior $B$ satisfies its pre-reveal commitment. The system applies the following conceptual rules; the implementation must report the exact thresholds used for stochastic outcomes.
+
+\begin{align*}
+\textsc{Aligned}(c) &\iff \big(D(c)\in\{\textsc{Change},\textsc{Preserve}\} \land Q(c,B_p)\big)\\
+&\quad \lor \big(D(c)=\textsc{Unresolved} \land \neg\operatorname{MaterialDiff}(B_0,B_p)\big),\\
+\textsc{Mismatch}(c) &\iff D(c)\in\{\textsc{Change},\textsc{Preserve}\} \land \neg Q(c,B_p),\\
+\textsc{NeedsJudgment}(c) &\iff D(c)\in\{\textsc{Unresolved},\textsc{Excluded}\} \\
+&\quad \land \operatorname{MaterialDiff}(B_0,B_p).
+\end{align*}
+
+Mismatch retains a secondary reason: target unmet for Change or preservation regression for Preserve. For an Unresolved or Excluded case, the system compares $B_p$ with $B_0$ only to detect whether the patch entered the region; it does not assign target success or failure. A case with no material change is shown as informational and does not contribute to a target-success count. Any row becomes Insufficient evidence when either artifact has no valid runs or a modal behavior share below 0.6. Insufficient evidence takes precedence over the other classifications.
+
+\subsection{Instruction-Intervention Protocol}
+\label{app:probe-protocol}
+
+The system supports two instruction interventions with different baselines and purposes. Before candidate generation, an automatic source check temporarily changes $S_0$ to locate one original instruction associated with the confirmed scope. The user reviews its results before confirming candidate inputs. After a candidate mismatch, an optional owner-requested candidate-block check temporarily masks one instruction in $S_p$ to estimate sensitivity to that block. The default workflow never presents a complete intervention matrix.
+
+\begin{table*}[t]
+    \caption{Instruction-intervention proposal and evidence-card schema.}
+    \label{tab:probe-schema}
+    \small
+    \begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}Y Y@{}}
+        \toprule
+        \textbf{Field} & \textbf{Proposal} & \textbf{Result card} \\
+        \midrule
+        Question & A discriminating question about an instruction's behavioral effect. & Restated with the evidence scope. \\
+        Evidence role & Source location ($M_0$) or candidate-block sensitivity ($M_p$). & Retained as a prominent, immutable label. \\
+        Baseline artifact & Exact $S_0$ or $S_p$ hash against which the intervention is compared. & Baseline and intervened artifact hashes. \\
+        Intervention & Baseline repetition or temporary modification of one or more skill instructions. & Exact executed skill change and configuration hash. \\
+        Held constant & Case context, non-intervened skill instructions, tool results, and model settings. & Deviations or replay limitations. \\
+        Relevant commitments & Rows that the intervention may clarify. & Observed effects on each row. \\
+        Budget & Maximum executions and estimated cost. & Actual executions, latency, and cost. \\
+        Interpretations & What outcomes could support or weaken; what remains unresolved. & Supported, weakened, or inconclusive interpretations. \\
+        Evidence & Not applicable before approval. & Behavior distribution, stability, raw runs, and evaluator provenance. \\
+        \bottomrule
+    \end{tabularx}
+\end{table*}
+
+The source planner returns exactly one existing instruction identifier, one already executed case identifier, one discriminating question, and relevant commitment identifiers. The service then performs exactly two source variants---deletion and minimal inversion---with three runs each. Candidate-block interventions are generated only on request for a committed candidate and use three runs against the complete-candidate baseline. Each intervention operates on an isolated temporary copy and never mutates the reviewed skill version. Neither intervention substitutes for executing the complete candidate.
+
+\subsubsection{Three evidentiary roles}
+Let $q_j(S)$ be the estimated satisfaction rate of commitment $j$ when skill $S$ is executed on the relevant fixed case fixtures. For source intervention $x$, $M_0$ records
+\[
+\Delta^{\mathrm{src}}_j(x)=q_j(S_0\ominus x)-q_j(S_0),
+\]
+where $S_0\ominus x$ is either deletion or minimal inversion of the selected source instruction. Each entry records its three intervention runs and the matched original baseline, but the prototype does not estimate instruction interactions or confidence intervals from this small fixed batch.
+
+Matched execution of the complete candidate produces a different comparison:
+\[
+\Delta^{\mathrm{full}}_j=q_j(S_p)-q_j(S_0).
+\]
+$E_p$ supports a judgment about the complete candidate under matched conditions. It cannot attribute the result to a candidate block.
+
+For a requested candidate-block intervention $h$, $M_p$ records
+\[
+\Delta^{\mathrm{block}}_j(h)=q_j(S_p\ominus h)-q_j(S_p),
+\]
+where $S_p\ominus h$ temporarily masks an added block or reverts a modified block according to the recorded intervention. This comparison estimates sensitivity to $h$ under the executed cases. It remains conditional and cannot establish unique causal responsibility.
+
+$M_0$, $E_p$, and $M_p$ remain separate evidence types with distinct user-facing fields. The evidence compiler performs no execution and cannot strengthen a result. Every numerical statement retains links to its baseline artifact, exact intervention when applicable, cases, run counts, evaluator, configuration, and uncertainty estimate.
+
+\subsubsection{Evidence-augmented diff annotations}
+Each candidate diff is segmented into contiguous changed blocks. The candidate generator proposes a scope-commitment link for each block, and the evidence compiler attaches correctly typed references. Table~\ref{tab:diff-annotation-schema} specifies the separation between normative, implementation, and empirical provenance.
+
+\begin{table*}[t]
+    \caption{Annotation schema for an evidence-augmented skill diff.}
+    \label{tab:diff-annotation-schema}
+    \small
+    \begin{tabularx}{\textwidth}{@{}p{0.18\textwidth}p{0.24\textwidth}Y@{}}
+        \toprule
+        \textbf{Field} & \textbf{Source} & \textbf{User-facing content} \\
+        \midrule
+        Scope commitment & Exact item in $V$ and $K$ & The Change, Preserve, or Unresolved commitment the block is intended to implement; no paraphrased intent field. \\
+        Implementation link & Candidate author or generator & Why this textual block was associated with that commitment; explicitly labeled as author-reported provenance. \\
+        Source-location evidence & Entries in $M_0$ & Original instruction, cases, observed source-mask effect, run counts, and stability; labeled ``locates source region, does not validate candidate block.'' \\
+        Candidate-block sensitivity & Entries in $M_p$, when requested & Candidate baseline, exact temporary block intervention, observed effect, run counts, and stability; otherwise ``not tested.'' \\
+        Complete-candidate outcome & Entries in $E_p$ & Shown in the behavioral-diff panel and linked by commitment, not presented as evidence for one block. \\
+        Limitations & Evidence compiler & Missing intervention evidence, unmatched configurations, evaluator uncertainty, possible interactions, or conditions outside the reviewed scope. \\
+        \bottomrule
+    \end{tabularx}
+\end{table*}
+
+Visual labels and schema validation prevent a source intervention from occupying the candidate-block field. Likewise, $E_p$ appears as a whole-candidate result even when the interface cross-highlights blocks mapped to the same commitment. Cross-highlighting supports navigation and makes no attribution claim.
+
+\subsection{Reuse Decisions and Provenance}
+\label{app:release-protocol}
+
+The user can choose:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Release}: create a new skill version with the reviewed patch record;
+    \item \textbf{Revise}: edit the behavioral scope, skill text, or both and begin a new candidate round;
+    \item \textbf{Gather evidence}: add repetitions, cases, or an instruction intervention; or
+    \item \textbf{Defer}: retain the current skill and record why the evidence does not yet justify a persistent edit.
+\end{itemize}
+
+A release record includes skill hashes, scope and review-round versions, the confirmed generator-input manifest, reviewed textual diff, pre-reveal commitments, candidate-author exposure, the active $M_0$ preview, $E_p$, optional current-candidate $M_p$, waivers, and user rationale. Historical previews and candidates remain in the task archive but are not relinked as evidence for the current release. The interface reports one motivating case and three product checks, including one generator-withheld case and one unresolved boundary. The record conveys reviewed evidence without claiming certification.
+
+\section{Deployed Walk-through Materials}
+\label{app:scenario-materials}
+
+The following materials instantiate the frozen travel scenario used by the prototype in Section~\ref{sec:system-walkthrough}. The reference repair and hidden assertions used for calibration are stored researcher-side and do not enter participant or candidate-generator views.
+
+\subsection{Original Travel-Recovery Skill}
+\label{app:travel-skill}
+
+\begin{enumerate}[leftmargin=*]
+    \item Retrieve calendar commitments in the affected period and distinguish fixed commitments from movable events.
+    \item Search replacement flights for the same origin and destination that depart after the disruption.
+    \item Remove options that violate route, passenger, document, or checked-baggage constraints.
+    \item Record calendar conflicts as trade-offs to explain; calendar commitments add no hard filtering constraint by themselves.
+    \item Unless the traveler explicitly provides a latest arrival in the current task, choose the lowest incremental-cost option among those satisfying the preceding hard travel constraints.
+    \item Break cost ties by preferring the original carrier, then fewer connections.
+    \item Present the selected option, arrival time, incremental cost, and principal trade-offs.
+    \item Before an incremental cost above USD~500, request traveler confirmation through the confirmation tool.
+    \item After any required confirmation, call the rebooking tool and report the order result.
+\end{enumerate}
+
+The injected fault is explicit in instructions~4--5: a fixed calendar commitment is observed but does not constrain feasibility unless the traveler separately supplied a latest arrival in the task.
+
+\subsection{Scope Anchors and Pre-Reveal Boundary Case}
+\label{app:scenario-cases}
+
+\begin{table*}[t]
+    \caption{Frozen cases and exposure roles in the travel scenario.}
+    \label{tab:scenario-cases}
+    \small
+    \begin{tabularx}{\textwidth}{@{}p{0.16\textwidth}p{0.18\textwidth}p{0.16\textwidth}Y@{}}
+        \toprule
+        \textbf{Case} & \textbf{Key context} & \textbf{Disposition} & \textbf{Behavioral commitment or review purpose} \\
+        \midrule
+        Conference incident & Fixed presentation; UA1123 is cheap but late & Change & Product case; visible to owner and candidate generator after owner confirmation. \\
+        Routine trip & No fixed commitment; later option is cheaper & Preserve & Product case; owner-visible and generator-withheld. \\
+        Expensive purchase & Timely replacement exceeds USD~500 & Preserve & Product case; preserve confirmation before booking. \\
+        Extreme fare boundary & Timely option has a very large premium & Unresolved & Product case; detect candidate entry but leave the policy to the owner. \\
+        Two-on-time prediction & Two options protect the commitment and differ in cost & --- & Revealed only after the terminal release/defer decision; never enters repair evidence. \\
+        Blind expensive holdout & New consequential itinerary & --- & Hidden from participant and candidate generator; executed only after questionnaire submission. \\
+        \bottomrule
+    \end{tabularx}
+\end{table*}
+
+\subsection{Behavioral Scope and Candidate Rounds}
+\label{app:scenario-patches}
+
+\paragraph{Committed behavioral scope.}
+The four product cases require arrival before the fixed commitment, preserve routine cost preference, preserve consequential-purchase confirmation, and leave the extreme-fare trade-off unresolved. The routine case and its criterion are owner-visible but generator-withheld. The two-on-time prediction and blind holdout do not enter this scope.
+
+\paragraph{Derived scope-to-patch preview.}
+The preview displays the exact identifiers and wording of the committed scope items. Beside them, it tests one original instruction on one product case. The calibrated travel fallback selects instruction~4 and the incident, comparing three deletions and three minimal inversions with the original baseline. Lin does not edit a second intent representation. A correction opens the corresponding scope item; confirming the preview records its hash and evidence identifiers in the candidate-input manifest.
+
+\paragraph{Candidate rounds.}
+The AI returns the complete numbered instruction list plus commitment and source-evidence identifiers for each rationale. A byte-equivalent candidate is rejected; after repeated no-op lists, a bounded recovery call may rewrite one source-located existing instruction using the same manifest. The candidate is then compared as a whole on all four product cases. Continuing candidate revision archives that artifact and its verdicts and provides only those verdicts as feedback against the same scope. Changing policy instead opens a separately labeled post-reveal scope round. Optional $M_p$ evidence remains conditional candidate-block sensitivity and is never substituted for $E_p$.
+
+\section{LLM Prompt Templates}
+\label{app:system-prompts}
+
+The templates below specify task contracts and output schemas. They should be populated with the implemented model names, examples, and safety checks. Cases designated generator-withheld must remain outside the candidate-patch prompt.
+
+\subsection{Contrastive Case Suggestion}
+\label{app:prompt-case}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single]
+SYSTEM: Interpret the owner's requested behavior change and rank only cases
+from the supplied executable bank. Do not invent a case, tool result, policy,
+or oracle, and do not decide an open boundary for the owner.
+
+INPUT:
+- Owner's exact motivating commitment and observable incident facts
+- Current skill and its numbered instructions
+- Public typed tool descriptions
+- Allowed case IDs, summaries, changed factors, and open questions
+
+RETURN:
+1. intent.summary, trigger, required_action, forbidden_action, ambiguities
+2. selected case_id
+3. relation_type
+4. why_relevant_to_this_owner_statement
+5. owner_question
+
+CONSTRAINTS:
+- Select IDs only from the supplied bank; never edit their fixture.
+- The interpretation is planning metadata, not normative intent.
+- In a formal task, preserve all three calibrated product cases.
+- Only the owner's exact case-bound commitments may enter candidate drafting.
+\end{lstlisting}
+
+\subsection{Source Check Selection and Manifest Compilation}
+\label{app:prompt-preview}
+
+Formal scenario packs bypass model selection and supply one versioned instruction, case, question, and inversion. The following bounded contract is used only for demo and imported skills; invalid output falls back to a structural or pack-defined choice.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single]
+SYSTEM: Select one bounded source-location check. Choose only one numbered
+instruction and one allowed, already executed case. Do not write candidate
+text, infer policy, inspect an oracle, or alter a case.
+
+INPUT:
+- Current skill with numbered instructions
+- Exact confirmed, non-excluded commitment IDs, dispositions, and text
+- Allowed executed case IDs and public summaries
+
+RETURN:
+1. instruction_number
+2. allowed_case_id
+3. discriminating_question
+4. relevant_commitment_ids
+
+CONSTRAINTS:
+- Select existing IDs only.
+- The service, not the model, executes deletion and minimal inversion 3 times.
+- A deterministic compiler copies exact commitments, run provenance, scope
+  hash, and preview hash into the manifest after execution.
+- Excluded and generator-withheld cases never become visible normative input.
+\end{lstlisting}
+
+\subsection{Candidate Patch Drafting}
+\label{app:prompt-patch}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single]
+SYSTEM: Revise the reusable skill to implement the visible behavioral scope.
+Minimize unsupported behavioral change. Keep the textual diff small only when
+doing so preserves the stated scope.
+
+INPUT:
+- Original skill
+- Confirmed generator-input manifest
+- Exact generator-visible scope commitments referenced by the manifest
+- Selected M0 source-location evidence referenced by the manifest
+- Tool and format constraints
+
+DO NOT RECEIVE:
+- Boundary cases and commitments designated generator-withheld
+- Boundary executions or evaluator results
+
+RETURN:
+1. complete_numbered_instruction_list
+2. rationale_rows_with_instruction_number
+3. commitment_ids_for_each_rationale
+4. M0_ids_for_each_rationale
+5. concise_implementation_reason
+
+CONSTRAINTS:
+- Preserve instructions not implicated by visible commitments.
+- Do not invent a policy for unresolved boundaries.
+- Do not remove confirmation or safety constraints unless explicitly approved.
+- Treat edit-to-commitment mappings as implementation provenance, not evidence.
+- Treat M0 only as evidence for locating a source region; it cannot validate
+  newly written text.
+\end{lstlisting}
+
+\subsection{Chat Narration of Computed Outcomes}
+\label{app:prompt-behavior}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single]
+SYSTEM: Explain the supplied, already computed review result in product
+language. Do not recalculate a verdict, invent evidence, or expose internal
+capability names or hidden chain-of-thought.
+
+INPUT:
+- Public case summary and exact owner commitment
+- Deterministically extracted observable facts and modal counts
+- Computed status: met | unmet | kept | broken | needs_judgment | insufficient
+- Permitted next decisions
+
+RETURN:
+1. concise explanation grounded in the supplied facts
+2. explicit uncertainty when status is insufficient
+3. the next owner decision, without tool-command syntax
+\end{lstlisting}
+
+\subsection{Source-Location Selection}
+\label{app:prompt-probe}
+
+This is the same non-formal selection contract summarized above. It does not run in a formal task whose source preview is frozen in the scenario pack.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single]
+SYSTEM: Choose one source instruction and one allowed executed case for a
+conditional sensitivity question. This selection locates an original source
+region only; it cannot validate candidate text.
+
+INPUT:
+- Original skill with numbered instructions
+- Exact confirmed commitment records
+- Allowed executed case IDs and public summaries
+
+RETURN:
+1. instruction_number
+2. allowed_case_id
+3. conditional_question
+4. relevant_commitment_ids
+
+CONSTRAINTS:
+- Select exactly one existing instruction and one allowed case.
+- The service fixes deletion + minimal inversion at 3 runs each.
+- Hold case world, tool schema, model settings, and all other instructions fixed.
+- Candidate-block checks are separate owner-requested operations whose baseline
+  is the complete candidate; this prompt cannot propose or interpret them.
+- Do not claim unique causality beyond the executed conditions.
+\end{lstlisting}
+
+\section{Operational Safeguards and Audit Checklist}
+\label{app:system-safeguards}
+
+Before reporting or evaluating the system, the implementation should satisfy the following checklist:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Version pinning:} store skill, model, tool, prompt, evaluator, and environment versions for every run.
+    \item \textbf{Boundary isolation:} verify through logs that an independent generator never receives cases, commitments, or evaluators designated generator-withheld.
+    \item \textbf{Commitment and exposure timing:} store whether each behavioral judgment preceded candidate outcomes and whether the candidate author had seen the case during implementation.
+    \item \textbf{Side-effect safety:} execute consequential actions only in cloned, stateful tool worlds with the production-facing result schema; never purchase, send, delete, or modify a production account during review.
+    \item \textbf{Evidence traceability:} every row status links to the exact runs and evaluator outputs that support it.
+    \item \textbf{Single intent source:} store behavioral intent only in the versioned scope; verify that the preview copies commitment identifiers, dispositions, and text verbatim.
+    \item \textbf{Preview provenance:} retain the scope version, selected $M_0$ identifiers, generator-input manifest, and confirmation time used for each candidate.
+    \item \textbf{Annotation provenance:} distinguish scope commitments, author-reported implementation links, $M_0$ source-location evidence, $E_p$ whole-candidate outcomes, and optional $M_p$ candidate-block sensitivity.
+    \item \textbf{Evaluator audit:} reject non-trace/non-fact automatic criteria in formal tasks; report deterministic coverage, modal disagreement, and owner judgments.
+    \item \textbf{No hidden reasoning claims:} never present model chain-of-thought or model-generated explanations as execution evidence.
+    \item \textbf{Failure visibility:} preserve minority outcomes, inconclusive intervention results, and the modal behavior.
+    \item \textbf{Scope provenance:} preserve when and why the user changed a commitment, added a case, or accepted an exception.
+    \item \textbf{Deferral:} allow the workflow to retain the current skill when the available evidence does not justify a persistent edit.
+    \item \textbf{Walk-through reproducibility:} retain the frozen scenario pack, exact skills, fixed budgets, and anonymized reconstruction records used for Section~\ref{sec:system-walkthrough}.
+\end{itemize}

@@ -100,5 +100,6 @@ python3 scripts/study_metrics.py export.json
 - `scenarios/packs/`：论文场景及研究侧 reference/oracle
 - `tests/` 与 `scripts/`：运行时单测、黑盒验收、闭环验收和场景校准
 - `scripts/study_assignments.py` 与 `scripts/run_study_task.py`：正式任务平衡分配、隔离启动、检查点与恢复
+- `paper-draft/`：当前 CHI 论文的 LaTeX 源码、参考文献、章节文件与编译版 PDF；其中的占位数据仍需在正式采集后替换
 
 导出格式为 `skillscope/2`，包含 skill 与版本、scope history、manifests、快照、运行、工具轨迹、判据、探测、暴露时间、release records、regression assets、匿名交互事件、chat-only 条件消息，以及任务后问卷与后台 holdout 结果。`study_metrics.py` 将每个任务导出转换为一行 analysis-ready JSON/CSV。
