@@ -1,0 +1,39 @@
+{
+ "fixtures": {
+  "flights.search": [
+   {
+    "id": "UA1123",
+    "origin": "SFO",
+    "destination": "ORD",
+    "depart": "2026-03-12T16:10",
+    "arrive": "2026-03-13T14:20",
+    "price": 980,
+    "airline": "UA",
+    "stops": 1,
+    "checked_baggage": true
+   },
+   {
+    "id": "UA455",
+    "origin": "SFO",
+    "destination": "ORD",
+    "depart": "2026-03-12T15:05",
+    "arrive": "2026-03-12T21:30",
+    "price": 1480,
+    "airline": "UA",
+    "stops": 0,
+    "checked_baggage": true
+   },
+   {
+    "id": "DL980",
+    "origin": "SFO",
+    "destination": "ORD",
+    "depart": "2026-03-12T13:40",
+    "arrive": "2026-03-12T20:10",
+    "price": 1860,
+    "airline": "DL",
+    "stops": 0,
+    "checked_baggage": true
+   }
+  ]
+ }
+}

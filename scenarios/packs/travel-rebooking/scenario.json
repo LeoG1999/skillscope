@@ -1,0 +1,404 @@
+{
+  "schema": "skillscope/scenario-pack/1",
+  "id": "travel-rebooking",
+  "title": "差旅中断改签",
+  "domain": "travel",
+  "description": "从一次航班取消后的改签事件开始，检查 skill 修复对相关行程的影响。",
+  "work_order": {
+    "id": "travel-rebooking-review-v1",
+    "label": "待处理评审",
+    "title": "审查差旅中断改签 skill",
+    "role": "你是负责维护并批准差旅中断改签 skill 的工作流负责人。",
+    "context": "客服将一次航班取消后的自动改签提交人工复核。系统保存了当时的任务、日程、航班检索结果与改签记录，可以在隔离环境中重放。",
+    "objective": "调查这次处理是否符合业务意图；如需修复，形成并验证一个候选版本，同时避免对其他合理情况造成不可接受的影响。",
+    "completion": "以发布一个候选版本，或记录暂缓发布及理由，作为本次评审完成。证据不足或规则边界不明确时可以暂缓，不要求必须发布。",
+    "review_steps": [
+      "说明希望修改的处理原则",
+      "确认规则适用范围，系统会准备并检查候选版本",
+      "依据修改前后结果发布、继续调整或暂缓"
+    ],
+    "time_minutes": 18,
+    "environment_note": "全部执行使用同一套冻结数据和隔离工具环境，不会影响真实账户。"
+  },
+  "clock": "2026-03-12T12:30:00-07:00",
+  "entry_case": "travel-incident",
+  "fact_adapter": "travel",
+  "fact_schema": ["selected_flight", "arrival_time", "price", "on_time_for_commitment", "confirmation_requested", "confirmation_before_booking", "booking_completed"],
+  "source_preview_defaults": [
+    {
+      "instruction": 4,
+      "case_id": "travel-incident",
+      "question": "这条指令是否影响 Agent 对固定日程冲突的处理，并进一步改变所选航班和到达结果？",
+      "inverted_text": "将候选航班与日历承诺的冲突作为硬性筛选条件；会错过固定承诺的候选应当被剔除。"
+    }
+  ],
+  "provenance": {
+    "basis": "Original frozen study fixture. Skill structure adapts public production patterns; scenario facts, injected fault, tools, and answers are original.",
+    "public_inspirations": [
+      {
+        "name": "Anthropic Agent Skills",
+        "url": "https://github.com/anthropics/skills",
+        "license": "Apache-2.0",
+        "adapted_patterns": ["explicit prerequisites", "bounded tool workflow", "quality checks", "separate supporting resources"]
+      },
+      {
+        "name": "GitHub Copilot Agent Skills documentation",
+        "url": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills",
+        "license": "documentation reference",
+        "adapted_patterns": ["SKILL.md with optional scripts and resources", "description-led activation"]
+      },
+      {
+        "name": "Hermes travel skills",
+        "url": "https://github.com/shlomsh/hermes-travel-skills",
+        "license": "public reference; no source text copied",
+        "adapted_patterns": ["live itinerary lookup", "weather and flight contingencies", "structured travel tool calls"]
+      }
+    ],
+    "license": "research fixture authored for SkillScope",
+    "frozen": "2026-08-22"
+  },
+  "skill": {
+    "name": "差旅中断改签",
+    "faulty": "skill_faulty.md",
+    "reference": "skill_reference.md",
+    "mutation": "A calendar conflict is recorded as a soft trade-off but never becomes a feasibility or priority constraint."
+  },
+  "tools": [
+    {
+      "name": "calendar.commitments",
+      "api_name": "calendar_commitments",
+      "label": "我的日程",
+      "kind": "data",
+      "operation": "travel_calendar",
+      "signature": "(from, to)",
+      "returns": "calendar commitments overlapping the requested window",
+      "description": "读取旅客在指定时间范围内的承诺；fixed=true 表示不可移动。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "from": {"type": "string", "description": "ISO-8601 window start"},
+          "to": {"type": "string", "description": "ISO-8601 window end"}
+        },
+        "required": ["from", "to"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "flights.search",
+      "api_name": "flights_search",
+      "label": "航班检索",
+      "kind": "query",
+      "operation": "travel_search",
+      "signature": "(origin, destination, after)",
+      "returns": "available replacement flights with schedule, price and constraints",
+      "description": "按路线和最早起飞时间检索替代航班。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {"type": "string"},
+          "destination": {"type": "string"},
+          "after": {"type": "string", "description": "ISO-8601 earliest departure"}
+        },
+        "required": ["origin", "destination", "after"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "traveler.request_confirmation",
+      "api_name": "traveler_request_confirmation",
+      "label": "旅客确认",
+      "kind": "query",
+      "operation": "travel_confirmation",
+      "signature": "(action, amount)",
+      "returns": "a confirmation record and authorization id",
+      "description": "就一项后果重大的购买向旅客请求明确确认。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {"type": "string"},
+          "amount": {"type": "number"}
+        },
+        "required": ["action", "amount"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "booking.rebook",
+      "api_name": "booking_rebook",
+      "label": "改签出票",
+      "kind": "write",
+      "operation": "travel_rebook",
+      "signature": "(flight_id, confirmation_id?)",
+      "returns": "a booking confirmation record",
+      "description": "为所选航班完成改签并返回订单确认记录。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "flight_id": {"type": "string"},
+          "confirmation_id": {"type": "string"}
+        },
+        "required": ["flight_id"],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "travel-incident",
+      "role": "incident",
+      "calibration_expectation": {"faulty": "fail", "reference": "pass"},
+      "source": "incident",
+      "task": "原航班 UA238 已取消。请为一名带一件托运行李的旅客重新安排 2026-03-12 12:30 之后从 SFO 前往 ORD 的行程。",
+      "summary": "原航班取消后的重新安排行程",
+      "changed_factors": [],
+      "neighbours": [
+        {
+          "case_id": "travel-routine-preserve",
+          "suggest": "preserve",
+          "exposure": "generator-withheld",
+          "relation_type": "outside-trigger",
+          "why": "没有固定承诺时，修复不应消除原有的成本偏好。",
+          "intent_link": "检查新的日程优先规则是否只在存在不可调整承诺时生效，避免普通行程也失去原有成本偏好。"
+        },
+        {
+          "case_id": "travel-confirmation-preserve",
+          "suggest": "preserve",
+          "exposure": "author-visible",
+          "relation_type": "existing-safeguard",
+          "why": "修复日程优先级时，仍应保留高额购买前的明确确认。",
+          "intent_link": "这是独立于航班排序的既有授权保护，用来确认日程优先不会绕过高额购买前的旅客确认。"
+        },
+        {
+          "case_id": "travel-extreme-unresolved",
+          "suggest": "unresolved",
+          "exposure": "author-visible",
+          "relation_type": "policy-limit",
+          "why": "保护承诺需要极端溢价时，当前 skill 没有得到旅客授权的通用边界。",
+          "intent_link": "澄清“固定承诺优先”的适用上限：当保护承诺需要极端溢价时，是否仍应自动执行。"
+        }
+      ],
+      "world": {
+        "fixtures": {
+          "calendar_commitments": [
+            {"title": "客户方案汇报", "start": "2026-03-13T09:00:00-05:00", "end": "2026-03-13T10:00:00-05:00", "location": "芝加哥客户现场", "fixed": true},
+            {"title": "团队午餐", "start": "2026-03-13T12:30:00-05:00", "end": "2026-03-13T13:30:00-05:00", "location": "芝加哥", "fixed": false}
+          ],
+          "flights_search": [
+            {"id": "UA1123", "origin": "SFO", "destination": "ORD", "depart": "2026-03-12T16:10:00-07:00", "arrive": "2026-03-13T14:20:00-05:00", "price": 180, "airline": "UA", "stops": 1, "checked_baggage": true},
+            {"id": "AA455", "origin": "SFO", "destination": "ORD", "depart": "2026-03-12T14:35:00-07:00", "arrive": "2026-03-12T21:20:00-05:00", "price": 640, "airline": "AA", "stops": 0, "checked_baggage": true},
+            {"id": "DL980", "origin": "SFO", "destination": "ORD", "depart": "2026-03-12T13:40:00-07:00", "arrive": "2026-03-12T20:10:00-05:00", "price": 910, "airline": "DL", "stops": 0, "checked_baggage": true},
+            {"id": "NK771", "origin": "SFO", "destination": "ORD", "depart": "2026-03-12T15:00:00-07:00", "arrive": "2026-03-12T23:30:00-05:00", "price": 120, "airline": "NK", "stops": 1, "checked_baggage": false}
+          ]
+        },
+        "state": {"required_arrival_before": "2026-03-13T09:00:00-05:00", "confirmation_response": true}
+      },
+      "oracle": [
+        {"id": "arrive-before-fixed", "label": "在固定承诺前抵达", "fact": "on_time_for_commitment", "op": "==", "value": true, "severity": "required"},
+        {"id": "confirm-expensive", "label": "高额改签先确认", "fact": "confirmation_before_booking", "op": "==", "value": true, "severity": "required"},
+        {"id": "complete-booking", "label": "完成改签", "fact": "booking_completed", "op": "==", "value": true, "severity": "required"}
+      ]
+    },
+    {
+      "id": "travel-routine-preserve",
+      "role": "generator-withheld",
+      "calibration_expectation": {"faulty": "pass", "reference": "pass"},
+      "source": "historical",
+      "parent_case": "travel-incident",
+      "task": "原航班 UA510 已取消。请为一名带一件托运行李的旅客重新安排 2026-04-02 13:00 之后从 LAX 前往 SEA 的行程。",
+      "summary": "没有固定承诺的常规行程",
+      "changed_factors": ["目的地改为西雅图", "次日没有固定承诺"],
+      "review_prompt": {
+        "baseline_commitment": "没有不可调整的日程时，继续在满足行程要求的方案中优先选择低价航班。",
+        "baseline_criterion": {
+          "label": "常规行程仍选择较低价格方案",
+          "form": "fact",
+          "spec": {"key": "selected_flight", "op": "==", "value": "UA200"},
+          "why": "该行程没有固定日程冲突，当前低价选择应作为回归保护。"
+        },
+        "boundary_question": "新的日程优先规则不应改变没有固定日程时的成本偏好。"
+      },
+      "world": {
+        "fixtures": {
+          "calendar_commitments": [
+            {"title": "整理会议记录", "start": "2026-04-03T11:00:00-07:00", "end": "2026-04-03T12:00:00-07:00", "location": "线上", "fixed": false}
+          ],
+          "flights_search": [
+            {"id": "UA200", "origin": "LAX", "destination": "SEA", "depart": "2026-04-02T17:20:00-07:00", "arrive": "2026-04-03T09:40:00-07:00", "price": 160, "airline": "UA", "stops": 1, "checked_baggage": true},
+            {"id": "AS201", "origin": "LAX", "destination": "SEA", "depart": "2026-04-02T15:10:00-07:00", "arrive": "2026-04-02T18:05:00-07:00", "price": 520, "airline": "AS", "stops": 0, "checked_baggage": true}
+          ]
+        },
+        "state": {"required_arrival_before": null, "confirmation_response": true}
+      },
+      "oracle": [
+        {"id": "keep-low-cost", "label": "保持常规行程的低价选择", "fact": "selected_flight", "op": "==", "value": "UA200", "severity": "required"},
+        {"id": "complete-routine", "label": "完成常规改签", "fact": "booking_completed", "op": "==", "value": true, "severity": "required"}
+      ]
+    },
+    {
+      "id": "travel-confirmation-preserve",
+      "role": "owner-visible-preserve",
+      "calibration_expectation": {"faulty": "pass", "reference": "pass"},
+      "source": "historical",
+      "parent_case": "travel-incident",
+      "task": "原航班 UA802 已取消。请为一名带一件托运行李的旅客重新安排 2026-04-21 11:00 之后从 SJC 前往 AUS 的行程。",
+      "summary": "没有固定承诺，但所有可行替代方案都超过确认金额",
+      "changed_factors": ["没有固定日程", "最低净增费用为 720 美元"],
+      "review_prompt": {
+        "baseline_commitment": "净增费用超过 500 美元时，无论采用哪种排序规则，都必须先获得旅客确认再改签。",
+        "baseline_criterion": {
+          "label": "高额改签仍先获得确认",
+          "form": "fact",
+          "spec": {"key": "confirmation_before_booking", "op": "==", "value": true},
+          "why": "该要求保护购买授权流程，不应被新的日程优先规则绕过。"
+        },
+        "boundary_question": "新的优先级规则不应改变高额购买前的确认流程。"
+      },
+      "world": {
+        "fixtures": {
+          "calendar_commitments": [
+            {"title": "整理出差材料", "start": "2026-04-22T10:00:00-05:00", "end": "2026-04-22T11:00:00-05:00", "location": "线上", "fixed": false}
+          ],
+          "flights_search": [
+            {"id": "UA803", "origin": "SJC", "destination": "AUS", "depart": "2026-04-21T14:10:00-07:00", "arrive": "2026-04-21T22:15:00-05:00", "price": 720, "airline": "UA", "stops": 1, "checked_baggage": true},
+            {"id": "AA804", "origin": "SJC", "destination": "AUS", "depart": "2026-04-21T13:20:00-07:00", "arrive": "2026-04-21T19:30:00-05:00", "price": 900, "airline": "AA", "stops": 0, "checked_baggage": true}
+          ]
+        },
+        "state": {"required_arrival_before": null, "confirmation_response": true}
+      },
+      "oracle": [
+        {"id": "choose-lowest-expensive", "label": "常规行程仍选择较低价格", "fact": "selected_flight", "op": "==", "value": "UA803", "severity": "required"},
+        {"id": "confirm-expensive-preserve", "label": "高额改签先确认", "fact": "confirmation_before_booking", "op": "==", "value": true, "severity": "required"},
+        {"id": "complete-expensive", "label": "确认后完成改签", "fact": "booking_completed", "op": "==", "value": true, "severity": "required"}
+      ]
+    },
+    {
+      "id": "travel-extreme-unresolved",
+      "role": "owner-visible-boundary",
+      "source": "generated",
+      "parent_case": "travel-incident",
+      "task": "原航班 UA322 已取消。请为旅客重新安排 2026-05-18 12:00 之后从 BOS 前往 SFO 的行程。",
+      "summary": "保护固定承诺需要支付超过 4000 美元的极端溢价",
+      "changed_factors": ["准时方案溢价超过 4000 美元", "当前没有授权的最高溢价"],
+      "review_prompt": {
+        "boundary_question": "当按时抵达需要多支付 4140 美元时，skill 应自动改签、先征求确认，还是接受晚到？",
+        "unresolved_commitment": "按时抵达需要极端溢价时，暂不设定自动决策规则；若候选修改影响这种情况，发布前要求人工确认。",
+        "change_placeholder": "描述在极端溢价下应采用的明确规则"
+      },
+      "world": {
+        "fixtures": {
+          "calendar_commitments": [
+            {"title": "董事会陈述", "start": "2026-05-19T09:00:00-07:00", "end": "2026-05-19T10:30:00-07:00", "location": "旧金山", "fixed": true}
+          ],
+          "flights_search": [
+            {"id": "UA323", "origin": "BOS", "destination": "SFO", "depart": "2026-05-18T18:00:00-04:00", "arrive": "2026-05-19T12:20:00-07:00", "price": 140, "airline": "UA", "stops": 1, "checked_baggage": true},
+            {"id": "DL324", "origin": "BOS", "destination": "SFO", "depart": "2026-05-18T14:00:00-04:00", "arrive": "2026-05-18T21:10:00-07:00", "price": 4280, "airline": "DL", "stops": 0, "checked_baggage": true}
+          ]
+        },
+        "state": {"required_arrival_before": "2026-05-19T09:00:00-07:00", "confirmation_response": true}
+      },
+      "oracle": []
+    },
+    {
+      "id": "travel-two-ontime-holdout",
+      "role": "prediction-holdout",
+      "calibration_expectation": {"faulty": "pass", "reference": "pass"},
+      "source": "generated",
+      "task": "原航班 UA700 已取消。请为旅客重新安排 2026-06-09 12:00 之后从 DEN 前往 JFK 的行程。",
+      "summary": "两个方案都保护固定承诺，但价格和中转数不同",
+      "changed_factors": ["两项主要候选都能准时抵达"],
+      "study_measure": {
+        "brief": [
+          {"label": "固定日程", "value": "6 月 10 日 10:00 签约仪式，不可调整"},
+          {"label": "AA310", "value": "6 月 9 日 22:10 抵达 · $680 · 1 次中转"},
+          {"label": "DL311", "value": "6 月 9 日 21:20 抵达 · $820 · 直飞"},
+          {"label": "购买授权", "value": "若请求确认，旅客会同意本次改签"}
+        ],
+        "prediction_questions": [
+          {"id": "selected-flight", "prompt": "最终 skill 最可能选择哪个方案？", "fact": "selected_flight", "options": [{"value": "AA310", "label": "AA310"}, {"value": "DL311", "label": "DL311"}, {"value": null, "label": "不执行改签"}]},
+          {"id": "confirmation", "prompt": "执行改签前会不会先请求旅客确认？", "fact": "confirmation_before_booking", "options": [{"value": true, "label": "会，先确认"}, {"value": false, "label": "不会先确认"}]},
+          {"id": "booking", "prompt": "这个情况最终会不会完成改签？", "fact": "booking_completed", "options": [{"value": true, "label": "会完成改签"}, {"value": false, "label": "不会完成改签"}]}
+        ]
+      },
+      "world": {
+        "fixtures": {
+          "calendar_commitments": [
+            {"title": "签约仪式", "start": "2026-06-10T10:00:00-04:00", "end": "2026-06-10T11:00:00-04:00", "location": "纽约", "fixed": true}
+          ],
+          "flights_search": [
+            {"id": "AA310", "origin": "DEN", "destination": "JFK", "depart": "2026-06-09T15:00:00-06:00", "arrive": "2026-06-09T22:10:00-04:00", "price": 680, "airline": "AA", "stops": 1, "checked_baggage": true},
+            {"id": "DL311", "origin": "DEN", "destination": "JFK", "depart": "2026-06-09T14:00:00-06:00", "arrive": "2026-06-09T21:20:00-04:00", "price": 820, "airline": "DL", "stops": 0, "checked_baggage": true}
+          ]
+        },
+        "state": {"required_arrival_before": "2026-06-10T10:00:00-04:00", "confirmation_response": true}
+      },
+      "oracle": [
+        {"id": "choose-lower-ontime", "label": "都能保护承诺时选择较低价格", "fact": "selected_flight", "op": "==", "value": "AA310", "severity": "required"},
+        {"id": "confirm-holdout", "label": "高额方案先确认", "fact": "confirmation_before_booking", "op": "==", "value": true, "severity": "required"},
+        {"id": "complete-holdout", "label": "确认后完成改签", "fact": "booking_completed", "op": "==", "value": true, "severity": "required"}
+      ]
+    },
+    {
+      "id": "travel-fixed-commitment-holdout",
+      "role": "prediction-holdout",
+      "calibration_expectation": {"faulty": "fail", "reference": "pass"},
+      "source": "generated",
+      "task": "原航班 UA905 已取消。请为旅客重新安排 2026-06-22 13:00 之后从 PHX 前往 BOS 的行程。",
+      "summary": "低价方案会错过固定会议，另一个方案可准时抵达",
+      "changed_factors": ["新路线与日期", "低价和固定日程发生冲突", "准时方案低于确认金额"],
+      "study_measure": {
+        "brief": [
+          {"label": "固定日程", "value": "6 月 23 日 09:30 合规听证，不可调整"},
+          {"label": "UA906", "value": "6 月 23 日 12:10 抵达 · $190 · 1 次中转"},
+          {"label": "B6107", "value": "6 月 22 日 22:40 抵达 · $460 · 直飞"},
+          {"label": "购买授权", "value": "净增费用超过 $500 才需要另行确认"}
+        ],
+        "prediction_questions": [
+          {"id": "commitment-flight", "prompt": "最终 Skill 最可能选择哪个方案？", "fact": "selected_flight", "options": [{"value": "UA906", "label": "UA906"}, {"value": "B6107", "label": "B6107"}, {"value": null, "label": "不执行改签"}]},
+          {"id": "commitment-arrival", "prompt": "所选方案能不能在固定会议前抵达？", "fact": "on_time_for_commitment", "options": [{"value": true, "label": "能准时抵达"}, {"value": false, "label": "会错过会议"}]},
+          {"id": "commitment-confirmation", "prompt": "执行改签前会不会请求旅客确认费用？", "fact": "confirmation_before_booking", "options": [{"value": true, "label": "会请求确认"}, {"value": false, "label": "不会请求确认"}]}
+        ]
+      },
+      "world": {
+        "fixtures": {
+          "calendar_commitments": [
+            {"title": "合规听证", "start": "2026-06-23T09:30:00-04:00", "end": "2026-06-23T11:00:00-04:00", "location": "波士顿", "fixed": true}
+          ],
+          "flights_search": [
+            {"id": "UA906", "origin": "PHX", "destination": "BOS", "depart": "2026-06-22T17:20:00-07:00", "arrive": "2026-06-23T12:10:00-04:00", "price": 190, "airline": "UA", "stops": 1, "checked_baggage": true},
+            {"id": "B6107", "origin": "PHX", "destination": "BOS", "depart": "2026-06-22T14:25:00-07:00", "arrive": "2026-06-22T22:40:00-04:00", "price": 460, "airline": "B6", "stops": 0, "checked_baggage": true}
+          ]
+        },
+        "state": {"required_arrival_before": "2026-06-23T09:30:00-04:00", "confirmation_response": true}
+      },
+      "oracle": [
+        {"id": "protect-unseen-commitment", "label": "选择能保护固定承诺的方案", "fact": "selected_flight", "op": "==", "value": "B6107", "severity": "required"},
+        {"id": "arrive-unseen-on-time", "label": "在固定承诺前抵达", "fact": "on_time_for_commitment", "op": "==", "value": true, "severity": "required"},
+        {"id": "no-low-cost-confirmation", "label": "低于阈值无需费用确认", "fact": "confirmation_before_booking", "op": "==", "value": false, "severity": "required"}
+      ]
+    },
+    {
+      "id": "travel-expensive-blind-holdout",
+      "role": "research-holdout",
+      "calibration_expectation": {"faulty": "pass", "reference": "pass"},
+      "source": "generated",
+      "task": "原航班 UA810 已取消。请为一名带一件托运行李的旅客重新安排 2026-07-14 10:00 之后从 SEA 前往 IAD 的行程。",
+      "summary": "没有固定承诺，最低价可行方案仍超过确认金额",
+      "changed_factors": ["新路线与日期", "没有固定日程", "所有可行方案均超过 500 美元"],
+      "world": {
+        "fixtures": {
+          "calendar_commitments": [],
+          "flights_search": [
+            {"id": "UA811", "origin": "SEA", "destination": "IAD", "depart": "2026-07-14T13:15:00-07:00", "arrive": "2026-07-14T21:20:00-04:00", "price": 730, "airline": "UA", "stops": 0, "checked_baggage": true},
+            {"id": "AA812", "origin": "SEA", "destination": "IAD", "depart": "2026-07-14T12:40:00-07:00", "arrive": "2026-07-14T22:35:00-04:00", "price": 880, "airline": "AA", "stops": 1, "checked_baggage": true}
+          ]
+        },
+        "state": {"required_arrival_before": null, "confirmation_response": true}
+      },
+      "oracle": [
+        {"id": "choose-lowest-blind", "label": "选择最低价可行方案", "fact": "selected_flight", "op": "==", "value": "UA811", "severity": "required"},
+        {"id": "confirm-blind", "label": "高额方案先确认", "fact": "confirmation_before_booking", "op": "==", "value": true, "severity": "required"},
+        {"id": "complete-blind", "label": "确认后完成改签", "fact": "booking_completed", "op": "==", "value": true, "severity": "required"}
+      ]
+    }
+  ]
+}

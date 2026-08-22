@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SkillScope · 任务结束问卷</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F4EEDA;--surface:#FFFDF7;--s2:#F6F1E2;--ink:#1C1813;--ink2:#574F42;
+  --ink3:#7C7364;--rule:#E4DCC7;--rule2:#D2C8AE;--acc:#7A5218;--acc2:#97671F;
+  --accs:#F5E9CE;--bad:#9E2B20;--sans:"IBM Plex Sans","Noto Sans SC",sans-serif;
+  --mono:"IBM Plex Mono","Noto Sans SC",monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#14110B;--surface:#1D1913;--s2:#252019;
+  --ink:#EDE6D6;--ink2:#B3A995;--ink3:#918878;--rule:#332D23;--rule2:#463E30;
+  --acc:#D9AE62;--acc2:#C69B4E;--accs:#2A2115;--bad:#E0897C}}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(150deg,var(--surface),var(--bg));
+  color:var(--ink);font:14px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}.top{height:48px;padding:0 22px;border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;position:sticky;top:0;background:var(--surface);z-index:2}
+.brand{font-weight:600;color:var(--acc)}.mode{margin-left:auto;font:11px var(--mono);color:var(--ink3)}
+main{width:min(760px,calc(100% - 30px));margin:28px auto 70px}.intro h1{font-size:24px;margin:0 0 6px}
+.intro p{margin:0;color:var(--ink3)}.card{margin-top:18px;padding:20px;border:1px solid var(--rule);
+  border-radius:13px;background:var(--surface);box-shadow:0 12px 32px -25px rgba(60,45,20,.35)}
+.eyebrow{font:10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+h2{font-size:16px;margin:4px 0 3px}p.help{margin:0 0 16px;color:var(--ink3);font-size:12px}
+.task{padding:12px 14px;border-left:3px solid var(--acc);background:var(--s2);margin:14px 0 18px}
+.task strong{display:block;margin-bottom:3px}.task span{color:var(--ink2)}
+.prediction-case{margin-top:18px;padding-top:4px}.prediction-case+.prediction-case{margin-top:24px;
+  padding-top:20px;border-top:2px solid var(--rule)}.case-number{font:10px var(--mono);color:var(--acc);
+  letter-spacing:.08em;text-transform:uppercase}
+.brief{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:-6px 0 18px}
+.brief-row{padding:9px 11px;border:1px solid var(--rule);border-radius:8px;background:var(--s2)}
+.brief-row span{display:block;font-size:10px;color:var(--ink3);margin-bottom:2px}
+.brief-row strong{font-size:12px;font-weight:500;color:var(--ink2)}
+.question{padding:15px 0;border-top:1px solid var(--rule)}.question:first-of-type{border-top:0}
+.qtext{font-weight:600;margin-bottom:9px}.options{display:flex;gap:8px;flex-wrap:wrap}
+.option{position:relative}.option input{position:absolute;opacity:0;pointer-events:none}
+.option span{display:block;padding:7px 12px;border:1px solid var(--rule2);border-radius:8px;background:var(--surface);cursor:pointer}
+.option input:checked+span{border-color:var(--acc);background:var(--accs);color:var(--acc);font-weight:500}
+.confidence{display:flex;gap:10px;align-items:center;margin-top:12px;color:var(--ink3);font-size:12px}
+.confidence select{margin-left:auto;min-width:132px;border:1px solid var(--rule2);border-radius:7px;
+  padding:6px 9px;background:var(--surface);color:var(--ink2)}
+input[type=range]{width:100%;accent-color:var(--acc)}.scale-row{display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--rule)}
+.scale-row:first-of-type{border-top:0}.scale-text{color:var(--ink2)}.scale{display:flex;gap:3px}
+.scale label{display:flex;flex-direction:column;align-items:center;font:10px var(--mono);color:var(--ink3)}
+.scale input{margin:0 0 3px}.anchors{display:flex;justify-content:space-between;color:var(--ink3);font-size:10px}
+.workload{padding:12px 0;border-top:1px solid var(--rule)}.workload:first-of-type{border-top:0}
+.work-head{display:flex;justify-content:space-between;gap:10px}.work-head output{font:11px var(--mono)}
+textarea{width:100%;min-height:88px;resize:vertical;border:1px solid var(--rule2);border-radius:9px;
+  padding:10px 12px;background:var(--surface);outline:none}textarea:focus{border-color:var(--acc)}
+.actions{display:flex;align-items:center;gap:12px;margin-top:20px}.submit{border:0;border-radius:8px;padding:9px 18px;
+  background:var(--acc);color:var(--surface);font-weight:600;cursor:pointer}.submit:hover{background:var(--acc2)}
+.submit:disabled{opacity:.45;cursor:wait}.error{color:var(--bad);font-size:12px}.done{text-align:center;padding:52px 20px}
+.done .mark{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin:0 auto 12px;
+  background:var(--accs);color:var(--acc);font-size:20px}.loading{text-align:center;color:var(--ink3);padding:80px 0}
+@media(max-width:620px){.card{padding:16px}.brief{grid-template-columns:1fr}.scale-row{grid-template-columns:1fr}.scale{justify-content:space-between}}
+</style></head><body>
+<div class="top"><span class="brand">SkillScope</span><span class="mode">任务结束问卷</span></div>
+<main id="main"><div class="loading">正在准备问卷…</div></main>
+<script>
+(function(){"use strict";
+function h(tag,attrs,children){var el=document.createElement(tag);attrs=attrs||{};
+  Object.keys(attrs).forEach(function(key){var value=attrs[key];if(value==null)return;
+    if(key.slice(0,2)==="on")el.addEventListener(key.slice(2),value);else el.setAttribute(key,value);});
+  (children||[]).forEach(function(child){if(child==null)return;
+    el.appendChild(typeof child==="string"?document.createTextNode(child):child);});return el;}
+function clr(el){while(el.firstChild)el.removeChild(el.firstChild);}
+var SESSION=sessionStorage.getItem("skillscope-session");
+if(!SESSION){SESSION="ss-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);
+  sessionStorage.setItem("skillscope-session",SESSION);}
+var root=document.getElementById("main"),Q=null;
+function done(){clr(root);root.appendChild(h("div",{class:"card done"},[
+  h("div",{class:"mark"},["✓"]),h("h1",{},["本轮任务已完成"]),
+  h("p",{class:"help"},["回答和行为预测已经保存。页面不会显示正确答案，以免影响后续任务。"])]));}
+function radioScale(item){var box=h("div",{class:"scale"});
+  for(var i=1;i<=7;i++)(function(value){var id="rate-"+item.id+"-"+value;
+    box.appendChild(h("label",{for:id},[h("input",{type:"radio",id:id,name:"rate-"+item.id,
+      value:String(value),required:"required"}),String(value)]));})(i);return box;}
+function rangeRow(item){var out=h("output",{},["50"]),input=h("input",{type:"range",min:"0",max:"100",
+  step:"5",value:"50",id:"work-"+item.id,oninput:function(){out.textContent=input.value;}});
+  return h("div",{class:"workload"},[h("div",{class:"work-head"},[h("strong",{},[item.text]),out]),
+    input,h("div",{class:"anchors"},[h("span",{},[item.left]),h("span",{},[item.right])])]);}
+function render(){if(Q.status==="completed")return done();clr(root);
+  var reviewed=(Q.work_order||{}).title||"本轮 skill 评审";
+  root.appendChild(h("div",{class:"intro"},[h("h1",{},["完成本轮任务"]),
+    h("p",{},["你已完成“"+reviewed+"”的发布决定。先预测最终 Skill 在两个新情况中的行为，再评价刚才的评审体验。"])]));
+  var form=h("form");
+  var prediction=h("section",{class:"card"},[h("div",{class:"eyebrow"},["行为理解"]),
+    h("h2",{},["预测两个未用于修复的新情况"]),
+    h("p",{class:"help"},["请根据你刚才审阅的最终版本作答。这些情况会在提交后执行，提交前不会显示结果。"])]);
+  var predictionCases=(Q.prediction_cases&&Q.prediction_cases.length)?Q.prediction_cases:[{
+    id:"legacy",task:Q.task,case_brief:Q.case_brief,prediction_questions:Q.prediction_questions}];
+  predictionCases.forEach(function(predCase,caseIndex){var caseBox=h("div",{class:"prediction-case"},[
+    h("div",{class:"case-number"},["新情况 "+(caseIndex+1)]),
+    h("div",{class:"task"},[h("strong",{},[(predCase.task||{}).summary||""]),
+      h("span",{},[(predCase.task||{}).description||""])])]);
+    if((predCase.case_brief||[]).length){var brief=h("div",{class:"brief"});
+      predCase.case_brief.forEach(function(row){brief.appendChild(h("div",{class:"brief-row"},[
+        h("span",{},[row.label]),h("strong",{},[row.value])]));});caseBox.appendChild(brief);}
+    (predCase.prediction_questions||[]).forEach(function(item){var options=h("div",{class:"options"});
+      item.options.forEach(function(option,index){var id="pred-"+item.id+"-"+index;
+        options.appendChild(h("label",{class:"option",for:id},[
+          h("input",{type:"radio",id:id,name:"pred-"+item.id,required:"required",
+            "data-value":JSON.stringify(option.value)}),h("span",{},[option.label])]));});
+      var confidence=h("select",{id:"conf-"+item.id,required:"required"},[
+        h("option",{value:"",disabled:"disabled",selected:"selected"},["选择信心程度"])]);
+      for(var value=0;value<=100;value+=10)confidence.appendChild(h("option",{value:String(value)},[
+        value+"%"]));
+      caseBox.appendChild(h("div",{class:"question"},[h("div",{class:"qtext"},[item.prompt]),options,
+        h("div",{class:"confidence"},[h("span",{},["对这个预测的信心"]),confidence])]));});
+    prediction.appendChild(caseBox);});
+  form.appendChild(prediction);
+  var ratings=h("section",{class:"card"},[h("div",{class:"eyebrow"},["评审体验"]),
+    h("h2",{},["你对以下说法的同意程度"]),h("p",{class:"help"},["1 = 非常不同意，7 = 非常同意。"])]);
+  Q.rating_items.forEach(function(item){ratings.appendChild(h("div",{class:"scale-row"},[
+    h("div",{class:"scale-text"},[item.text]),radioScale(item)]));});form.appendChild(ratings);
+  var workload=h("section",{class:"card"},[h("div",{class:"eyebrow"},["任务负荷"]),
+    h("h2",{},["刚才这项任务给你的感受"]),h("p",{class:"help"},["拖动滑块评价每个维度。"])]);
+  Q.workload_items.forEach(function(item){workload.appendChild(rangeRow(item));});
+  workload.appendChild(h("div",{class:"question"},[h("div",{class:"qtext"},["还有什么影响了你的判断？（可选）"]),
+    h("textarea",{id:"comment",maxlength:"2000",placeholder:"例如：哪些证据最有用，哪里仍然难以判断。"})]));
+  form.appendChild(workload);
+  var error=h("span",{class:"error",id:"error"}),submit=h("button",{class:"submit",type:"submit"},["提交并完成"]);
+  form.appendChild(h("div",{class:"actions"},[submit,error]));
+  form.addEventListener("submit",function(event){event.preventDefault();if(!form.reportValidity())return;
+    var predictionItems=[];predictionCases.forEach(function(predCase){
+      predictionItems=predictionItems.concat(predCase.prediction_questions||[]);});
+    var predictions=predictionItems.map(function(item){var selected=form.querySelector(
+      'input[name="pred-'+item.id+'"]:checked');return {question_id:item.id,
+        value:JSON.parse(selected.getAttribute("data-value")),confidence:Number(
+          document.getElementById("conf-"+item.id).value)};});
+    var ratingValues={};Q.rating_items.forEach(function(item){ratingValues[item.id]=Number(
+      form.querySelector('input[name="rate-'+item.id+'"]:checked').value);});
+    var workloadValues={};Q.workload_items.forEach(function(item){workloadValues[item.id]=Number(
+      document.getElementById("work-"+item.id).value);});
+    submit.disabled=true;submit.textContent="正在保存并完成行为检查…";error.textContent="";
+    fetch("/api/study/questionnaire/submit",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({id:Q.id,predictions:predictions,ratings:ratingValues,
+        workload:workloadValues,comment:document.getElementById("comment").value})})
+      .then(function(response){return response.json().then(function(data){if(!response.ok||data.error)
+        throw new Error(data.error||"提交失败");return data;});}).then(done).catch(function(err){
+          submit.disabled=false;submit.textContent="提交并完成";error.textContent=String(err.message||err);});
+  });root.appendChild(form);}
+fetch("/api/study/questionnaire/start",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({session:SESSION})}).then(function(response){return response.json().then(function(data){
+    if(!response.ok||data.error)throw new Error(data.error||"问卷加载失败");return data;});})
+  .then(function(data){Q=data.questionnaire;render();}).catch(function(err){clr(root);root.appendChild(
+    h("div",{class:"card done"},[h("h1",{},["暂时无法开始问卷"]),h("p",{class:"error"},[
+      String(err.message||err)])]));});
+})();
+</script></body></html>

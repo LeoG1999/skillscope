@@ -1,0 +1,411 @@
+{
+  "schema": "skillscope/scenario-pack/1",
+  "id": "expense-review",
+  "title": "报销票据审核",
+  "domain": "expense",
+  "description": "从一笔员工报销的自动审核事件开始，检查 skill 修复对相关政策处理的影响。",
+  "work_order": {
+    "id": "expense-review-review-v1",
+    "label": "待处理评审",
+    "title": "审查报销票据审核 skill",
+    "role": "你是负责维护并批准报销票据审核 skill 的工作流负责人。",
+    "context": "财务复核人员将一笔自动审核结果提交人工复核。系统保存了当时的审核任务、员工政策、票据字段与处理记录，可以在隔离环境中重放。",
+    "objective": "调查这次处理是否符合业务意图；如需修复，形成并验证一个候选版本，同时避免对其他合理情况造成不可接受的影响。",
+    "completion": "以发布一个候选版本，或记录暂缓发布及理由，作为本次评审完成。证据不足或规则边界不明确时可以暂缓，不要求必须发布。",
+    "review_steps": [
+      "说明希望修改的处理原则",
+      "确认规则适用范围，系统会准备并检查候选版本",
+      "依据修改前后结果发布、继续调整或暂缓"
+    ],
+    "time_minutes": 18,
+    "environment_note": "全部执行使用同一套冻结数据和隔离工具环境，不会影响真实财务系统。"
+  },
+  "clock": "2026-03-12T10:00:00+08:00",
+  "entry_case": "expense-incident",
+  "fact_adapter": "expense",
+  "fact_schema": ["receipt_id", "decision", "decision_recorded", "ledger_entry_created", "manager_approval_requested", "required_fields_complete", "restricted_category", "amount"],
+  "source_preview_defaults": [
+    {
+      "instruction": 5,
+      "case_id": "expense-incident",
+      "question": "这条指令是否让小额条件覆盖了品类审核，并进一步改变审核决定、审批请求和入账结果？",
+      "inverted_text": "金额不高于提交人的日常额度时也不得直接记录通过，必须先完成其他政策与品类检查。"
+    }
+  ],
+  "provenance": {
+    "basis": "Original frozen study fixture. Skill structure and approval ordering adapt public production patterns; scenario facts, injected fault, tools, and answers are original.",
+    "public_inspirations": [
+      {
+        "name": "Anthropic Agent Skills",
+        "url": "https://github.com/anthropics/skills",
+        "license": "Apache-2.0",
+        "adapted_patterns": ["never invent missing data", "validate before writing", "quality checks", "separate supporting resources"]
+      },
+      {
+        "name": "SAP Concur Expense workflow documentation",
+        "url": "https://help.sap.com/docs/CONCUR_EXPENSE/bb83754b1c5541808d50c09901e11475/084979eed00d4b79a3fcf8851ff46bbb.html",
+        "license": "official workflow documentation reference",
+        "adapted_patterns": ["approval before processing", "send-back path", "ledger export after approval"]
+      },
+      {
+        "name": "Expense Reimbursement Skill",
+        "url": "https://github.com/Auromix/expense-reimbursement-skill",
+        "license": "Apache-2.0",
+        "adapted_patterns": ["preserve original receipts", "open questions for missing data", "one expense per ledger row"]
+      }
+    ],
+    "license": "research fixture authored for SkillScope",
+    "frozen": "2026-08-22"
+  },
+  "skill": {
+    "name": "报销票据审核",
+    "faulty": "skill_faulty.md",
+    "reference": "skill_reference.md",
+    "mutation": "The low-amount fast path runs before the retrieved restricted-category policy is applied."
+  },
+  "tools": [
+    {
+      "name": "hr.profile",
+      "api_name": "hr_profile",
+      "label": "员工政策档案",
+      "kind": "data",
+      "operation": "lookup",
+      "signature": "(employee_id)",
+      "returns": "employee level, limits and restricted categories",
+      "description": "读取员工岗位级别以及与其关联的费用限制。",
+      "parameters": {
+        "type": "object",
+        "properties": {"employee_id": {"type": "string"}},
+        "required": ["employee_id"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "receipts.get",
+      "api_name": "receipts_get",
+      "label": "票据记录",
+      "kind": "query",
+      "operation": "lookup",
+      "signature": "(receipt_id)",
+      "returns": "one submitted receipt and its required fields",
+      "description": "读取一张已提交票据的结构化字段。",
+      "parameters": {
+        "type": "object",
+        "properties": {"receipt_id": {"type": "string"}},
+        "required": ["receipt_id"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "manager.request_approval",
+      "api_name": "manager_request_approval",
+      "label": "主管审批",
+      "kind": "query",
+      "operation": "manager_approval",
+      "signature": "(receipt_id, reason)",
+      "returns": "an approval request record and current response",
+      "description": "针对需要升级的票据请求主管审批。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "receipt_id": {"type": "string"},
+          "reason": {"type": "string"}
+        },
+        "required": ["receipt_id", "reason"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "review.record_decision",
+      "api_name": "review_record_decision",
+      "label": "审核结论",
+      "kind": "write",
+      "operation": "record_decision",
+      "signature": "(receipt_id, decision, reason)",
+      "returns": "a review decision record",
+      "description": "记录通过、退回或升级审批的审核结论。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "receipt_id": {"type": "string"},
+          "decision": {"type": "string", "enum": ["approve", "reject", "escalate"]},
+          "reason": {"type": "string"}
+        },
+        "required": ["receipt_id", "decision", "reason"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ledger.post",
+      "api_name": "ledger_post",
+      "label": "财务入账",
+      "kind": "write",
+      "operation": "ledger_post",
+      "signature": "(receipt_id, approval_id?)",
+      "returns": "a ledger entry",
+      "description": "为最终通过的票据创建财务凭证并返回凭证编号。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "receipt_id": {"type": "string"},
+          "approval_id": {"type": "string"}
+        },
+        "required": ["receipt_id"],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "expense-incident",
+      "role": "incident",
+      "calibration_expectation": {"faulty": "fail", "reference": "pass"},
+      "source": "incident",
+      "task": "审核员工 E1042 提交的报销票据 R-8891，并记录可以执行的处理结论。",
+      "summary": "员工报销票据的自动审核",
+      "changed_factors": [],
+      "neighbours": [
+        {
+          "case_id": "expense-routine-preserve",
+          "suggest": "preserve",
+          "exposure": "generator-withheld",
+          "relation_type": "outside-trigger",
+          "why": "非受限、字段完整的小额票据仍应保持快速通过。",
+          "intent_link": "检查新的品类规则是否只作用于受限或不合规品类，避免把明确合规的票据也送去人工审批。"
+        },
+        {
+          "case_id": "expense-missing-field-preserve",
+          "suggest": "preserve",
+          "exposure": "author-visible",
+          "relation_type": "existing-safeguard",
+          "why": "修复品类规则时，不应绕过缺少必填字段时的退回与禁止入账。",
+          "intent_link": "这是独立于品类判断的既有审核保护，用来确认修改不会绕过缺少必填字段时的退回与禁止入账。"
+        },
+        {
+          "case_id": "expense-client-gift-unresolved",
+          "suggest": "unresolved",
+          "exposure": "author-visible",
+          "relation_type": "definition-boundary",
+          "why": "客户礼品接近受限品类，但当前政策没有定义这条边界。",
+          "intent_link": "澄清“不合规品类”是否只指政策明确列出的受限品类，还是也包括未列明但可能相近的品类。"
+        }
+      ],
+      "world": {
+        "fixtures": {
+          "hr_profile": [
+            {"employee_id": "E1042", "name": "林岚", "level": "P4", "daily_limit": 200, "escalation_threshold": 800, "restricted_categories": ["高档餐饮", "头等舱", "高尔夫", "酒类"]}
+          ],
+          "receipts_get": [
+            {"receipt_id": "R-8891", "employee_id": "E1042", "merchant": "云顶轩", "category": "高档餐饮", "amount": 180, "currency": "CNY", "date": "2026-03-09", "invoice_no": "INV-77120"}
+          ]
+        },
+        "state": {"target_receipt": "R-8891", "manager_response": false}
+      },
+      "oracle": [
+        {"id": "request-policy-approval", "label": "受限品类请求主管审批", "fact": "manager_approval_requested", "op": "==", "value": true, "severity": "required"},
+        {"id": "record-nonapproval", "label": "不直接记录通过", "fact": "decision", "op": "!=", "value": "approve", "severity": "required"},
+        {"id": "record-a-decision", "label": "留下可审计结论", "fact": "decision_recorded", "op": "==", "value": true, "severity": "required"},
+        {"id": "do-not-post-restricted", "label": "未获批准前不入账", "fact": "ledger_entry_created", "op": "==", "value": false, "severity": "required"}
+      ]
+    },
+    {
+      "id": "expense-routine-preserve",
+      "role": "generator-withheld",
+      "calibration_expectation": {"faulty": "pass", "reference": "pass"},
+      "source": "historical",
+      "parent_case": "expense-incident",
+      "task": "审核员工 E1042 提交的报销票据 R-8892，并记录可以执行的处理结论。",
+      "summary": "字段完整、非受限品类的常规小额交通费",
+      "changed_factors": ["品类改为市内交通", "金额降为 46 元"],
+      "review_prompt": {
+        "baseline_commitment": "字段完整且不属于受限品类的小额票据，继续通过快速通道并完成入账。",
+        "baseline_criterion": {
+          "label": "常规小额票据继续通过",
+          "form": "fact",
+          "spec": {"key": "decision", "op": "==", "value": "approve"},
+          "why": "该票据不触发品类限制，当前快速通过行为应作为回归保护。"
+        },
+        "boundary_question": "新的品类优先规则不应阻塞不受限制的常规小额票据。"
+      },
+      "world": {
+        "fixtures": {
+          "hr_profile": [
+            {"employee_id": "E1042", "name": "林岚", "level": "P4", "daily_limit": 200, "escalation_threshold": 800, "restricted_categories": ["高档餐饮", "头等舱", "高尔夫", "酒类"]}
+          ],
+          "receipts_get": [
+            {"receipt_id": "R-8892", "employee_id": "E1042", "merchant": "滴滴出行", "category": "市内交通", "amount": 46, "currency": "CNY", "date": "2026-03-09", "invoice_no": "INV-77121"}
+          ]
+        },
+        "state": {"target_receipt": "R-8892", "manager_response": false}
+      },
+      "oracle": [
+        {"id": "approve-routine", "label": "常规小额票据继续通过", "fact": "decision", "op": "==", "value": "approve", "severity": "required"},
+        {"id": "post-routine", "label": "创建常规财务凭证", "fact": "ledger_entry_created", "op": "==", "value": true, "severity": "required"}
+      ]
+    },
+    {
+      "id": "expense-missing-field-preserve",
+      "role": "owner-visible-preserve",
+      "calibration_expectation": {"faulty": "pass", "reference": "pass"},
+      "source": "historical",
+      "parent_case": "expense-incident",
+      "task": "审核员工 E1042 提交的报销票据 R-8894，并记录可以执行的处理结论。",
+      "summary": "缺少发票号的非受限小额票据",
+      "changed_factors": ["品类改为办公用品", "发票号缺失"],
+      "review_prompt": {
+        "baseline_commitment": "票据缺少任一必填字段时，继续记录退回且不得创建财务凭证。",
+        "baseline_criterion": {
+          "label": "缺少必填字段时继续退回",
+          "form": "fact",
+          "spec": {"key": "decision", "op": "==", "value": "reject"},
+          "why": "字段完整性检查是独立的审核保护，不应被新的品类优先规则改变。"
+        },
+        "boundary_question": "新的品类优先规则不应改变票据字段不完整时的退回处理。"
+      },
+      "world": {
+        "fixtures": {
+          "hr_profile": [
+            {"employee_id": "E1042", "name": "林岚", "level": "P4", "daily_limit": 200, "escalation_threshold": 800, "restricted_categories": ["高档餐饮", "头等舱", "高尔夫", "酒类"]}
+          ],
+          "receipts_get": [
+            {"receipt_id": "R-8894", "employee_id": "E1042", "merchant": "京东企业购", "category": "办公用品", "amount": 120, "currency": "CNY", "date": "2026-03-10", "invoice_no": ""}
+          ]
+        },
+        "state": {"target_receipt": "R-8894", "manager_response": false}
+      },
+      "oracle": [
+        {"id": "reject-visible-incomplete", "label": "缺少必填字段时退回", "fact": "decision", "op": "==", "value": "reject", "severity": "required"},
+        {"id": "record-visible-incomplete", "label": "留下退回记录", "fact": "decision_recorded", "op": "==", "value": true, "severity": "required"},
+        {"id": "no-post-visible-incomplete", "label": "票据不完整时不入账", "fact": "ledger_entry_created", "op": "==", "value": false, "severity": "required"}
+      ]
+    },
+    {
+      "id": "expense-client-gift-unresolved",
+      "role": "owner-visible-boundary",
+      "source": "generated",
+      "parent_case": "expense-incident",
+      "task": "审核员工 E1042 提交的报销票据 R-8895，并记录可以执行的处理结论。",
+      "summary": "政策未列明的客户礼品票据",
+      "changed_factors": ["品类改为客户礼品", "政策没有客户礼品条款"],
+      "review_prompt": {
+        "boundary_question": "客户礼品与受限品类相近，但现有政策没有明确条款；skill 是否应自动升级审批仍需业务负责人决定。",
+        "unresolved_commitment": "客户礼品是否按受限品类处理尚未确定；若候选修改影响这种情况，发布前要求人工确认。",
+        "change_placeholder": "描述客户礼品应采用的明确审核规则"
+      },
+      "world": {
+        "fixtures": {
+          "hr_profile": [
+            {"employee_id": "E1042", "name": "林岚", "level": "P4", "daily_limit": 200, "escalation_threshold": 800, "restricted_categories": ["高档餐饮", "头等舱", "高尔夫", "酒类"]}
+          ],
+          "receipts_get": [
+            {"receipt_id": "R-8895", "employee_id": "E1042", "merchant": "礼遇商贸", "category": "客户礼品", "amount": 190, "currency": "CNY", "date": "2026-03-10", "invoice_no": "INV-77125"}
+          ]
+        },
+        "state": {"target_receipt": "R-8895", "manager_response": false}
+      },
+      "oracle": []
+    },
+    {
+      "id": "expense-missing-field-holdout",
+      "role": "prediction-holdout",
+      "calibration_expectation": {"faulty": "pass", "reference": "pass"},
+      "source": "generated",
+      "task": "审核员工 E2277 提交的报销票据 R-8893，并记录可以执行的处理结论。",
+      "summary": "低于该员工额度但缺少发票号的机票票据",
+      "changed_factors": ["提交人级别不同", "发票号缺失"],
+      "study_measure": {
+        "brief": [
+          {"label": "员工政策", "value": "日常额度 6000 元 · 升级阈值 10000 元"},
+          {"label": "受限品类", "value": "头等舱"},
+          {"label": "票据 R-8893", "value": "经济舱机票 · 4200 元"},
+          {"label": "必填字段", "value": "发票号为空"}
+        ],
+        "prediction_questions": [
+          {"id": "decision", "prompt": "最终 skill 最可能记录什么审核决定？", "fact": "decision", "options": [{"value": "approve", "label": "通过"}, {"value": "reject", "label": "退回"}, {"value": "escalate", "label": "升级审批"}]},
+          {"id": "ledger", "prompt": "这张票据会不会创建财务凭证？", "fact": "ledger_entry_created", "options": [{"value": true, "label": "会入账"}, {"value": false, "label": "不会入账"}]},
+          {"id": "decision-recorded", "prompt": "系统会不会留下审核决定记录？", "fact": "decision_recorded", "options": [{"value": true, "label": "会留下记录"}, {"value": false, "label": "不会留下记录"}]}
+        ]
+      },
+      "world": {
+        "fixtures": {
+          "hr_profile": [
+            {"employee_id": "E2277", "name": "周珂", "level": "M2", "daily_limit": 6000, "escalation_threshold": 10000, "restricted_categories": ["头等舱"]}
+          ],
+          "receipts_get": [
+            {"receipt_id": "R-8893", "employee_id": "E2277", "merchant": "东方航空", "category": "经济舱机票", "amount": 4200, "currency": "CNY", "date": "2026-03-10", "invoice_no": ""}
+          ]
+        },
+        "state": {"target_receipt": "R-8893", "manager_response": false}
+      },
+      "oracle": [
+        {"id": "reject-incomplete", "label": "缺少必填字段时退回", "fact": "decision", "op": "==", "value": "reject", "severity": "required"},
+        {"id": "no-post-incomplete", "label": "票据不完整时不入账", "fact": "ledger_entry_created", "op": "==", "value": false, "severity": "required"},
+        {"id": "record-incomplete", "label": "留下退回记录", "fact": "decision_recorded", "op": "==", "value": true, "severity": "required"}
+      ]
+    },
+    {
+      "id": "expense-restricted-category-holdout",
+      "role": "prediction-holdout",
+      "calibration_expectation": {"faulty": "fail", "reference": "pass"},
+      "source": "generated",
+      "task": "审核员工 E3150 提交的报销票据 R-9012，并记录可以执行的处理结论。",
+      "summary": "低于日常额度、资料完整但属于受限酒类的票据",
+      "changed_factors": ["新员工与新票据", "金额低于日常额度", "品类属于该员工的受限类别"],
+      "study_measure": {
+        "brief": [
+          {"label": "员工政策", "value": "日常额度 500 元 · 升级阈值 1500 元"},
+          {"label": "受限品类", "value": "酒类"},
+          {"label": "票据 R-9012", "value": "酒类 · 260 元 · 必填字段完整"},
+          {"label": "主管结果", "value": "若请求审批，主管会拒绝"}
+        ],
+        "prediction_questions": [
+          {"id": "restricted-decision", "prompt": "最终 Skill 最可能记录什么审核决定？", "fact": "decision", "options": [{"value": "approve", "label": "通过"}, {"value": "reject", "label": "退回"}, {"value": "escalate", "label": "升级审批"}]},
+          {"id": "restricted-manager", "prompt": "系统会不会请求主管审批？", "fact": "manager_approval_requested", "options": [{"value": true, "label": "会请求审批"}, {"value": false, "label": "不会请求审批"}]},
+          {"id": "restricted-ledger", "prompt": "这张票据会不会创建财务凭证？", "fact": "ledger_entry_created", "options": [{"value": true, "label": "会入账"}, {"value": false, "label": "不会入账"}]}
+        ]
+      },
+      "world": {
+        "fixtures": {
+          "hr_profile": [
+            {"employee_id": "E3150", "name": "赵宁", "level": "P3", "daily_limit": 500, "escalation_threshold": 1500, "restricted_categories": ["酒类", "高尔夫"]}
+          ],
+          "receipts_get": [
+            {"receipt_id": "R-9012", "employee_id": "E3150", "merchant": "城市酒业", "category": "酒类", "amount": 260, "currency": "CNY", "date": "2026-04-08", "invoice_no": "INV-78310"}
+          ]
+        },
+        "state": {"target_receipt": "R-9012", "manager_response": false}
+      },
+      "oracle": [
+        {"id": "request-unseen-policy-approval", "label": "受限品类请求主管审批", "fact": "manager_approval_requested", "op": "==", "value": true, "severity": "required"},
+        {"id": "unseen-not-approved", "label": "主管拒绝时不直接通过", "fact": "decision", "op": "!=", "value": "approve", "severity": "required"},
+        {"id": "unseen-no-post", "label": "未获批准前不入账", "fact": "ledger_entry_created", "op": "==", "value": false, "severity": "required"}
+      ]
+    },
+    {
+      "id": "expense-restricted-blind-holdout",
+      "role": "research-holdout",
+      "calibration_expectation": {"faulty": "fail", "reference": "pass"},
+      "source": "generated",
+      "task": "审核员工 E2277 提交的报销票据 R-8896，并记录可以执行的处理结论。",
+      "summary": "低于该员工日常额度的受限头等舱票据",
+      "changed_factors": ["提交人级别不同", "金额低于日常额度", "品类仍属于受限类别"],
+      "world": {
+        "fixtures": {
+          "hr_profile": [
+            {"employee_id": "E2277", "name": "周珂", "level": "M2", "daily_limit": 6000, "escalation_threshold": 10000, "restricted_categories": ["头等舱"]}
+          ],
+          "receipts_get": [
+            {"receipt_id": "R-8896", "employee_id": "E2277", "merchant": "国际航空", "category": "头等舱", "amount": 5200, "currency": "CNY", "date": "2026-03-11", "invoice_no": "INV-77128"}
+          ]
+        },
+        "state": {"target_receipt": "R-8896", "manager_response": false}
+      },
+      "oracle": [
+        {"id": "request-blind-policy-approval", "label": "受限品类请求主管审批", "fact": "manager_approval_requested", "op": "==", "value": true, "severity": "required"},
+        {"id": "blind-not-approved", "label": "未获批准时不直接通过", "fact": "decision", "op": "!=", "value": "approve", "severity": "required"},
+        {"id": "blind-decision-recorded", "label": "留下可审计结论", "fact": "decision_recorded", "op": "==", "value": true, "severity": "required"},
+        {"id": "blind-no-post", "label": "未获批准前不入账", "fact": "ledger_entry_created", "op": "==", "value": false, "severity": "required"}
+      ]
+    }
+  ]
+}

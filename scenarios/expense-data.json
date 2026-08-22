@@ -1,0 +1,10 @@
+{"sources":{
+ "hr.profile":[
+  {"employee_id":"E1042","name":"林岚","level":"P4","daily_limit":200,"escalation_threshold":800,"restricted_categories":"高档餐饮, 头等舱, 高尔夫, 酒类"},
+  {"employee_id":"E2277","name":"周珂","level":"M2","daily_limit":600,"escalation_threshold":3000,"restricted_categories":"头等舱"},
+  {"employee_id":"E3910","name":"高铭","level":"D1","daily_limit":1500,"escalation_threshold":8000,"restricted_categories":""}],
+ "receipts.validate":[
+  {"receipt_id":"R-8891","employee_id":"E1042","merchant":"云顶轩","category":"高档餐饮","amount":180,"currency":"CNY","date":"2026-03-09","invoice_no":"INV-77120"},
+  {"receipt_id":"R-8892","employee_id":"E1042","merchant":"滴滴出行","category":"市内交通","amount":46,"currency":"CNY","date":"2026-03-09","invoice_no":"INV-77121"},
+  {"receipt_id":"R-8893","employee_id":"E2277","merchant":"东方航空","category":"机票","amount":4200,"currency":"CNY","date":"2026-03-10","invoice_no":""},
+  {"receipt_id":"R-8894","employee_id":"E1042","merchant":"星巴克","category":"餐饮","amount":68,"currency":"CNY","date":"2026-03-11","invoice_no":"INV-77140"}]}}

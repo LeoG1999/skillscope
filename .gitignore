@@ -4,3 +4,4 @@ __pycache__/
 *.log
 *.bak
 评审包*.json
+study-data/
